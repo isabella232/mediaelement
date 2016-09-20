@@ -3,7 +3,7 @@
 	$.extend(mejs.MepDefaults, {
 		usePluginFullScreen: true,
 		newWindowCallback: function() { return '';},
-		fullscreenText: mejs.i18n.t('Fullscreen')
+		fullscreenText: mejs.i18n.t('Enter Fullscreen')
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -13,26 +13,26 @@
 		isNativeFullScreen: false,
 
 		isInIframe: false,
-							
+
 		// Possible modes
 		// (1) 'native-native' 	HTML5 video  + browser fullscreen (IE10+, etc.)
 		// (2) 'plugin-native' 	plugin video + browser fullscreen (fails in some versions of Firefox)
 		// (3) 'fullwindow' 	Full window (retains all UI)
 		// usePluginFullScreen = true
 		// (4) 'plugin-click' 	Flash 1 - click through with pointer events
-		// (5) 'plugin-hover' 	Flash 2 - hover popup in flash (IE6-8)		
+		// (5) 'plugin-hover' 	Flash 2 - hover popup in flash (IE6-8)
 		fullscreenMode: '',
 
 		buildfullscreen: function(player, controls, layers, media) {
 
 			if (!player.isVideo)
 				return;
-				
-			player.isInIframe = (window.location != window.parent.location);	
-		
+
+			player.isInIframe = (window.location != window.parent.location);
+
 			// detect on start
 			media.addEventListener('loadstart', function() { player.detectFullscreenMode(); });
-				
+
 			// build button
 			var t = this,
 				hideTimeout = null,
@@ -42,40 +42,40 @@
 					'</div>')
 					.appendTo(controls)
 					.on('click', function() {
-						
+
 						// toggle fullscreen
 						var isFullScreen = (mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || player.isFullScreen;
-	
+
 						if (isFullScreen) {
 							player.exitFullScreen();
 						} else {
 							player.enterFullScreen();
 						}
-					})										
+					})
 					.on('mouseover', function() {
-						
+
 						// very old browsers with a plugin
-						if (t.fullscreenMode == 'plugin-hover') {						
+						if (t.fullscreenMode == 'plugin-hover') {
 							if (hideTimeout !== null) {
 								clearTimeout(hideTimeout);
 								delete hideTimeout;
 							}
-	
+
 							var buttonPos = fullscreenBtn.offset(),
 								containerPos = player.container.offset();
-	
+
 							media.positionFullscreenButton(buttonPos.left - containerPos.left, buttonPos.top - containerPos.top, true);
 						}
 
 					})
 					.on('mouseout', function() {
 
-						if (t.fullscreenMode == 'plugin-hover') {						
+						if (t.fullscreenMode == 'plugin-hover') {
 							if (hideTimeout !== null) {
 								clearTimeout(hideTimeout);
 								delete hideTimeout;
 							}
-	
+
 							hideTimeout = setTimeout(function() {
 								media.hideFullscreenButton();
 							}, 1500);
@@ -83,19 +83,27 @@
 
 					});
 
-					
+
 
 			player.fullscreenBtn = fullscreenBtn;
+
+			player.fullscreenBtn.setLabel = function (newLabel) {
+				var label = mejs.i18n.t(newLabel);
+
+				player.fullscreenBtn.find('button')
+					.attr('aria-label', label)
+					.attr('title', label);
+			}
 
 			t.globalBind('keydown',function (e) {
 				if (e.keyCode == 27 && ((mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || t.isFullScreen)) {
 					player.exitFullScreen();
 				}
 			});
-			
+
 			t.normalHeight = 0;
-			t.normalWidth = 0;					
-					
+			t.normalWidth = 0;
+
 			// setup native fullscreen event
 			if (mejs.MediaFeatures.hasTrueNativeFullScreen) {
 
@@ -119,45 +127,45 @@
 			}
 
 		},
-		
+
 		detectFullscreenMode: function() {
-			
+
 			var t = this,
 				mode = '',
 				features = mejs.MediaFeatures;
-			
+
 			if (features.hasTrueNativeFullScreen && t.media.pluginType === 'native') {
 				mode = 'native-native';
 			} else if (features.hasTrueNativeFullScreen && t.media.pluginType !== 'native' && !features.hasFirefoxPluginMovingProblem) {
-				mode = 'plugin-native';					
-			} else if (t.usePluginFullScreen) { 
+				mode = 'plugin-native';
+			} else if (t.usePluginFullScreen) {
 				if (mejs.MediaFeatures.supportsPointerEvents) {
 					mode = 'plugin-click';
 					// this needs some special setup
-					t.createPluginClickThrough();				
-				} else { 
+					t.createPluginClickThrough();
+				} else {
 					mode = 'plugin-hover';
 				}
-				
+
 			} else {
 				mode = 'fullwindow';
 			}
-			
-			
-			t.fullscreenMode = mode;		
+
+
+			t.fullscreenMode = mode;
 			return mode;
 		},
-		
+
 		isPluginClickThroughCreated: false,
-		
+
 		createPluginClickThrough: function() {
-				
+
 			var t = this;
-			
+
 			// don't build twice
 			if (t.isPluginClickThroughCreated) {
 				return;
-			}	
+			}
 
 			// allows clicking through the fullscreen button and controls down directly to Flash
 
@@ -303,7 +311,7 @@
 
 
 			t.isPluginClickThroughCreated = true;
-		},		
+		},
 
 		cleanfullscreen: function(player) {
 			player.exitFullScreen();
@@ -356,15 +364,15 @@
 								setTimeout(checkFullscreen, 500);
 							}
 						}
-						
+
 					}, 1000);
 				}
-				
-			} else if (t.fullscreeMode == 'fullwindow') {				
+
+			} else if (t.fullscreeMode == 'fullwindow') {
 				// move into position
-				
-			}			
-			
+
+			}
+
 			// make full size
 			t.container
 				.addClass('mejs-container-fullscreen')
@@ -388,14 +396,14 @@
 			} else {
 				t.container.find('.mejs-shim')
 					.width('100%')
-					.height('100%');	
-				
+					.height('100%');
+
 				setTimeout(function() {
 					var win = $(window),
 						winW = win.width(),
 						winH = win.height();
-							
-					t.media.setVideoSize(winW,winH);			
+
+					t.media.setVideoSize(winW,winH);
 				}, 500);
 			}
 
@@ -415,6 +423,7 @@
 			t.container.find('.mejs-captions-text').css('font-size', screen.width / t.width * 1.00 * 100 + '%');
 			t.container.find('.mejs-captions-position').css('bottom', '45px');
 
+			t.fullscreenBtn.setLabel('Exit Fullscreen');
 			t.container.trigger('enteredfullscreen');
 		},
 
@@ -473,6 +482,7 @@
 			t.container.find('.mejs-captions-text').css('font-size','');
 			t.container.find('.mejs-captions-position').css('bottom', '');
 
+			t.fullscreenBtn.setLabel('Enter Fullscreen');
 			t.container.trigger('exitedfullscreen');
 		}
 	});

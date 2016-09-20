@@ -8,9 +8,10 @@
 		speeds: ['2.00', '1.50', '1.25', '1.00', '0.75'],
 
 		defaultSpeed: '1.00',
-		
-		speedChar: 'x'
 
+		speedChar: 'x',
+
+		speedLabel: mejs.i18n.t('Change playback speed')
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -19,7 +20,7 @@
 			var t = this;
 
 			if (t.media.pluginType == 'native') {
-				var 
+				var
 					speedButton = null,
 					speedSelector = null,
 					playbackSpeed = null,
@@ -65,15 +66,19 @@
 					}
 				};
 
+				var speedLabel = function(speed) {
+					return t.options.speedLabel + ': Current speed ' + getSpeedNameFromValue(speed);
+				}
+
 				var html = '<div class="mejs-button mejs-speed-button">' +
-							'<button type="button">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
+							'<button type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
 							'<div class="mejs-speed-selector">' +
 							'<ul>';
 
 				for (i = 0, il = speeds.length; i<il; i++) {
 					inputId = t.id + '-speed-' + speeds[i].value;
-					html += '<li>' + 
-								'<input type="radio" name="speed" ' + 
+					html += '<li>' +
+								'<input type="radio" name="speed" ' +
 											'value="' + speeds[i].value + '" ' +
 											'id="' + inputId + '" ' +
 											(speeds[i].value === t.options.defaultSpeed ? ' checked' : '') +
@@ -101,7 +106,9 @@
 						var newSpeed = $(this).attr('value');
 						playbackSpeed = newSpeed;
 						media.playbackRate = parseFloat(newSpeed);
-						speedButton.find('button').html(getSpeedNameFromValue(newSpeed));
+						speedButton.find('button')
+							.html(getSpeedNameFromValue(newSpeed))
+							.attr('aria-label', speedLabel(newSpeed));
 						speedButton.find('.mejs-speed-selected').removeClass('mejs-speed-selected');
 						speedButton.find('input[type="radio"]:checked').next().addClass('mejs-speed-selected');
 					});

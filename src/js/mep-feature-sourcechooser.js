@@ -6,6 +6,8 @@
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
+		sources: [],
+
 		buildsourcechooser: function(player, controls, layers, media) {
 
 			var t = this;
@@ -13,7 +15,7 @@
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '" aria-live="assertive"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -98,6 +100,8 @@
 							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler, true);
 							media.load();
 						}
+
+						t.setAriaLabel(media);
 					})
 
 					// Handle click so that screen readers can toggle the menu
@@ -114,9 +118,25 @@
 			for (var i in this.node.children) {
 				var src = this.node.children[i];
 				if (src.nodeName === 'SOURCE' && (media.canPlayType(src.type) == 'probably' || media.canPlayType(src.type) == 'maybe')) {
+					t.sources.push(src);
 					player.addSourceButton(src.src, src.title, src.type, media.src == src.src);
 				}
 			}
+
+			t.setAriaLabel(media);
+		},
+
+		setAriaLabel: function(media) {
+			var label = mejs.i18n.t(this.options.sourcechooserText)
+			var current = this.currentSource(media);
+
+			if (current) {
+				label += ': ' + mejs.i18n.t(current);
+			}
+
+			this.sourcechooserButton.find('button')
+				.attr('aria-label', label)
+				.attr('title', label);
 		},
 
 		addSourceButton: function(src, label, type, isCurrent) {
@@ -135,6 +155,18 @@
 
 			t.adjustSourcechooserBox();
 
+		},
+
+		currentSource: function(media) {
+			var current = [].slice.call(this.sources).filter(function(src) {
+				return src.src == media.src;
+			})[0];
+
+			if (current) {
+				return current.title || '';
+			}
+
+			return '';
 		},
 
 		adjustSourcechooserBox: function() {

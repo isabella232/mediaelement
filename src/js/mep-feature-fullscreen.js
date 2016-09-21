@@ -38,7 +38,7 @@
 				hideTimeout = null,
 				fullscreenBtn =
 					$('<div class="mejs-button mejs-fullscreen-button">' +
-						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '"></button>' +
+						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '" aria-live="assertive"></button>' +
 					'</div>')
 					.appendTo(controls)
 					.on('click', function() {

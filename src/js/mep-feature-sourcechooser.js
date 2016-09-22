@@ -158,7 +158,7 @@
 		},
 
 		currentSource: function(media) {
-			var current = [].slice.call(this.sources).filter(function(src) {
+			var current = this.sources.filter(function(src) {
 				return src.src == media.src;
 			})[0];
 

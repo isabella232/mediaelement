@@ -13,7 +13,7 @@
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -24,43 +24,52 @@
 					// hover
 					.hover(function() {
 						clearTimeout(hoverTimeout);
-						$(this).find('.mejs-sourcechooser-selector')
-							.removeClass('mejs-offscreen')
-							.attr('aria-expanded', 'true')
-							.attr('aria-hidden', 'false');
+						player.showSourcechooserSelector();
 					}, function() {
 						var self = $(this);
 						hoverTimeout = setTimeout(function () {
-							self.find('.mejs-sourcechooser-selector')
-								.addClass('mejs-offscreen')
-								.attr('aria-expanded', 'false')
-								.attr('aria-hidden', 'true');
+						player.hideSourcechooserSelector();
 						}, 500);
 					})
 
 					// keyboard menu activation
 					.on('keydown', function (e) {
-					  var keyCode = e.keyCode;
+						var keyCode = e.keyCode;
 
-					  switch (keyCode) {
+						switch (keyCode) {
 							case 32: // space
+								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
+									player.showSourcechooserSelector();
+								}
 								$(this).find('.mejs-sourcechooser-selector')
-									.removeClass('mejs-offscreen')
-									.attr('aria-expanded', 'true')
-									.attr('aria-hidden', 'false')
+									.find('input[type=radio]:checked').first().focus();
+								break;
+							case 13: // enter
+								player.showSourcechooserSelector();
+								$(this).find('.mejs-sourcechooser-selector')
 									.find('input[type=radio]:checked').first().focus();
 								break;
 							case 27: // esc
-								$(this).find('.mejs-sourcechooser-selector')
-									.addClass('mejs-offscreen')
-									.attr('aria-expanded', 'false')
-									.attr('aria-hidden', 'true');
+								player.hideSourcechooserSelector();
 								$(this).find('button').focus();
 								break;
 							default:
 								return true;
 								}
 							})
+
+					// close menu when tabbing away
+					.on('focusout', mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
+						// Firefox does NOT support e.relatedTarget to see which element
+						// just lost focus, so wait to find the next focused element
+						setTimeout(function () {
+							var parent = $(document.activeElement).closest('.mejs-sourcechooser-selector');
+							if (!parent.length) {
+								// focus is outside the control; close menu
+								player.hideSourcechooserSelector();
+							}
+						}, 0);
+					}, 100))
 
 					// handle clicks to the source radio buttons
 					.delegate('input[type=radio]', 'click', function() {
@@ -89,7 +98,17 @@
 							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler, true);
 							media.load();
 						}
-				});
+					})
+
+					// Handle click so that screen readers can toggle the menu
+					.delegate('button', 'click', function (e) {
+						if ($(this).siblings('.mejs-sourcechooser-selector').hasClass('mejs-offscreen')) {
+							player.showSourcechooserSelector();
+							$(this).siblings('.mejs-sourcechooser-selector').find('input[type=radio]:checked').first().focus();
+						} else {
+							player.hideSourcechooserSelector();
+						}
+					});
 
 			// add to list
 			for (var i in this.node.children) {
@@ -98,7 +117,6 @@
 					player.addSourceButton(src.src, src.title, src.type, media.src == src.src);
 				}
 			}
-
 		},
 
 		addSourceButton: function(src, label, type, isCurrent) {
@@ -111,7 +129,7 @@
 			t.sourcechooserButton.find('ul').append(
 				$('<li>'+
 						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '"' + ' />'+
-						'<label for="' + t.id + '_sourcechooser_' + label + type + '">' + label + ' (' + type + ')</label>'+
+						'<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + ' (' + type + ')</label>'+
 					'</li>')
 			);
 
@@ -125,6 +143,24 @@
 			t.sourcechooserButton.find('.mejs-sourcechooser-selector').height(
 				t.sourcechooserButton.find('.mejs-sourcechooser-selector ul').outerHeight(true)
 			);
+		},
+
+		hideSourcechooserSelector: function () {
+			this.sourcechooserButton.find('.mejs-sourcechooser-selector')
+				.addClass('mejs-offscreen')
+				.attr('aria-expanded', 'false')
+				.attr('aria-hidden', 'true')
+				.find('input[type=radio]') // make radios not fucusable
+				.attr('tabindex', '-1');
+		},
+
+		showSourcechooserSelector: function () {
+			this.sourcechooserButton.find('.mejs-sourcechooser-selector')
+				.removeClass('mejs-offscreen')
+				.attr('aria-expanded', 'true')
+				.attr('aria-hidden', 'false')
+				.find('input[type=radio]')
+				.attr('tabindex', '0');
 		}
 	});
 

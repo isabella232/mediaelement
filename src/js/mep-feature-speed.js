@@ -11,7 +11,7 @@
 
 		speedChar: 'x',
 
-		speedLabel: mejs.i18n.t('Change playback speed')
+		speedLabel: 'Change playback speed'
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -67,7 +67,7 @@
 				};
 
 				var speedLabel = function(speed) {
-					return t.options.speedLabel + ': Current speed ' + getSpeedNameFromValue(speed);
+					return mejs.i18n.t(t.options.speedLabel + ': Current speed ' + getSpeedNameFromValue(speed));
 				}
 
 				var html = '<div class="mejs-button mejs-speed-button">' +

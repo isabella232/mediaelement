@@ -2366,7 +2366,7 @@ function isAfter(sourceNode, targetNode) {
 	$.extend(mejs.MepDefaults, {
 		usePluginFullScreen: true,
 		newWindowCallback: function() { return '';},
-		fullscreenText: mejs.i18n.t('Fullscreen')
+		fullscreenText: mejs.i18n.t('Enter Fullscreen')
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -2376,69 +2376,69 @@ function isAfter(sourceNode, targetNode) {
 		isNativeFullScreen: false,
 
 		isInIframe: false,
-							
+
 		// Possible modes
 		// (1) 'native-native' 	HTML5 video  + browser fullscreen (IE10+, etc.)
 		// (2) 'plugin-native' 	plugin video + browser fullscreen (fails in some versions of Firefox)
 		// (3) 'fullwindow' 	Full window (retains all UI)
 		// usePluginFullScreen = true
 		// (4) 'plugin-click' 	Flash 1 - click through with pointer events
-		// (5) 'plugin-hover' 	Flash 2 - hover popup in flash (IE6-8)		
+		// (5) 'plugin-hover' 	Flash 2 - hover popup in flash (IE6-8)
 		fullscreenMode: '',
 
 		buildfullscreen: function(player, controls, layers, media) {
 
 			if (!player.isVideo)
 				return;
-				
-			player.isInIframe = (window.location != window.parent.location);	
-		
+
+			player.isInIframe = (window.location != window.parent.location);
+
 			// detect on start
 			media.addEventListener('loadstart', function() { player.detectFullscreenMode(); });
-				
+
 			// build button
 			var t = this,
 				hideTimeout = null,
 				fullscreenBtn =
 					$('<div class="mejs-button mejs-fullscreen-button">' +
-						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '"></button>' +
+						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '" aria-live="assertive"></button>' +
 					'</div>')
 					.appendTo(controls)
 					.on('click', function() {
-						
+
 						// toggle fullscreen
 						var isFullScreen = (mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || player.isFullScreen;
-	
+
 						if (isFullScreen) {
 							player.exitFullScreen();
 						} else {
 							player.enterFullScreen();
 						}
-					})										
+					})
 					.on('mouseover', function() {
-						
+
 						// very old browsers with a plugin
-						if (t.fullscreenMode == 'plugin-hover') {						
+						if (t.fullscreenMode == 'plugin-hover') {
 							if (hideTimeout !== null) {
 								clearTimeout(hideTimeout);
 								delete hideTimeout;
 							}
-	
+
 							var buttonPos = fullscreenBtn.offset(),
 								containerPos = player.container.offset();
-	
+
 							media.positionFullscreenButton(buttonPos.left - containerPos.left, buttonPos.top - containerPos.top, true);
 						}
 
 					})
 					.on('mouseout', function() {
 
-						if (t.fullscreenMode == 'plugin-hover') {						
+						if (t.fullscreenMode == 'plugin-hover') {
 							if (hideTimeout !== null) {
 								clearTimeout(hideTimeout);
 								delete hideTimeout;
 							}
-	
+
 							hideTimeout = setTimeout(function() {
 								media.hideFullscreenButton();
 							}, 1500);
@@ -2446,19 +2446,27 @@ function isAfter(sourceNode, targetNode) {
 
 					});
 
-					
+
 
 			player.fullscreenBtn = fullscreenBtn;
+
+			player.fullscreenBtn.setLabel = function (newLabel) {
+				var label = mejs.i18n.t(newLabel);
+
+				player.fullscreenBtn.find('button')
+					.attr('aria-label', label)
+					.attr('title', label);
+			}
 
 			t.globalBind('keydown',function (e) {
 				if (e.keyCode == 27 && ((mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || t.isFullScreen)) {
 					player.exitFullScreen();
 				}
 			});
-			
+
 			t.normalHeight = 0;
-			t.normalWidth = 0;					
-					
+			t.normalWidth = 0;
+
 			// setup native fullscreen event
 			if (mejs.MediaFeatures.hasTrueNativeFullScreen) {
 
@@ -2482,45 +2490,45 @@ function isAfter(sourceNode, targetNode) {
 			}
 
 		},
-		
+
 		detectFullscreenMode: function() {
-			
+
 			var t = this,
 				mode = '',
 				features = mejs.MediaFeatures;
-			
+
 			if (features.hasTrueNativeFullScreen && t.media.pluginType === 'native') {
 				mode = 'native-native';
 			} else if (features.hasTrueNativeFullScreen && t.media.pluginType !== 'native' && !features.hasFirefoxPluginMovingProblem) {
-				mode = 'plugin-native';					
-			} else if (t.usePluginFullScreen) { 
+				mode = 'plugin-native';
+			} else if (t.usePluginFullScreen) {
 				if (mejs.MediaFeatures.supportsPointerEvents) {
 					mode = 'plugin-click';
 					// this needs some special setup
-					t.createPluginClickThrough();				
-				} else { 
+					t.createPluginClickThrough();
+				} else {
 					mode = 'plugin-hover';
 				}
-				
+
 			} else {
 				mode = 'fullwindow';
 			}
-			
-			
-			t.fullscreenMode = mode;		
+
+
+			t.fullscreenMode = mode;
 			return mode;
 		},
-		
+
 		isPluginClickThroughCreated: false,
-		
+
 		createPluginClickThrough: function() {
-				
+
 			var t = this;
-			
+
 			// don't build twice
 			if (t.isPluginClickThroughCreated) {
 				return;
-			}	
+			}
 
 			// allows clicking through the fullscreen button and controls down directly to Flash
 
@@ -2666,7 +2674,7 @@ function isAfter(sourceNode, targetNode) {
 
 
 			t.isPluginClickThroughCreated = true;
-		},		
+		},
 
 		cleanfullscreen: function(player) {
 			player.exitFullScreen();
@@ -2719,15 +2727,15 @@ function isAfter(sourceNode, targetNode) {
 								setTimeout(checkFullscreen, 500);
 							}
 						}
-						
+
 					}, 1000);
 				}
-				
-			} else if (t.fullscreeMode == 'fullwindow') {				
+
+			} else if (t.fullscreeMode == 'fullwindow') {
 				// move into position
-				
-			}			
-			
+
+			}
+
 			// make full size
 			t.container
 				.addClass('mejs-container-fullscreen')
@@ -2751,14 +2759,14 @@ function isAfter(sourceNode, targetNode) {
 			} else {
 				t.container.find('.mejs-shim')
 					.width('100%')
-					.height('100%');	
-				
+					.height('100%');
+
 				setTimeout(function() {
 					var win = $(window),
 						winW = win.width(),
 						winH = win.height();
-							
-					t.media.setVideoSize(winW,winH);			
+
+					t.media.setVideoSize(winW,winH);
 				}, 500);
 			}
 
@@ -2778,6 +2786,7 @@ function isAfter(sourceNode, targetNode) {
 			t.container.find('.mejs-captions-text').css('font-size', screen.width / t.width * 1.00 * 100 + '%');
 			t.container.find('.mejs-captions-position').css('bottom', '45px');
 
+			t.fullscreenBtn.setLabel('Exit Fullscreen');
 			t.container.trigger('enteredfullscreen');
 		},
 
@@ -2836,6 +2845,7 @@ function isAfter(sourceNode, targetNode) {
 			t.container.find('.mejs-captions-text').css('font-size','');
 			t.container.find('.mejs-captions-position').css('bottom', '');
 
+			t.fullscreenBtn.setLabel('Enter Fullscreen');
 			t.container.trigger('exitedfullscreen');
 		}
 	});
@@ -2852,9 +2862,10 @@ function isAfter(sourceNode, targetNode) {
 		speeds: ['2.00', '1.50', '1.25', '1.00', '0.75'],
 
 		defaultSpeed: '1.00',
-		
-		speedChar: 'x'
 
+		speedChar: 'x',
+
+		speedLabel: 'Change playback speed'
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -2863,7 +2874,7 @@ function isAfter(sourceNode, targetNode) {
 			var t = this;
 
 			if (t.media.pluginType == 'native') {
-				var 
+				var
 					speedButton = null,
 					speedSelector = null,
 					playbackSpeed = null,
@@ -2909,15 +2920,19 @@ function isAfter(sourceNode, targetNode) {
 					}
 				};
 
+				var speedLabel = function(speed) {
+					return mejs.i18n.t(t.options.speedLabel + ': Current speed ' + getSpeedNameFromValue(speed));
+				}
+
 				var html = '<div class="mejs-button mejs-speed-button">' +
-							'<button type="button">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
+							'<button type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
 							'<div class="mejs-speed-selector">' +
 							'<ul>';
 
 				for (i = 0, il = speeds.length; i<il; i++) {
 					inputId = t.id + '-speed-' + speeds[i].value;
-					html += '<li>' + 
-								'<input type="radio" name="speed" ' + 
+					html += '<li>' +
+								'<input type="radio" name="speed" ' +
 											'value="' + speeds[i].value + '" ' +
 											'id="' + inputId + '" ' +
 											(speeds[i].value === t.options.defaultSpeed ? ' checked' : '') +
@@ -2945,7 +2960,9 @@ function isAfter(sourceNode, targetNode) {
 						var newSpeed = $(this).attr('value');
 						playbackSpeed = newSpeed;
 						media.playbackRate = parseFloat(newSpeed);
-						speedButton.find('button').html(getSpeedNameFromValue(newSpeed));
+						speedButton.find('button')
+							.html(getSpeedNameFromValue(newSpeed))
+							.attr('aria-label', speedLabel(newSpeed));
 						speedButton.find('.mejs-speed-selected').removeClass('mejs-speed-selected');
 						speedButton.find('input[type="radio"]:checked').next().addClass('mejs-speed-selected');
 					});
@@ -3676,6 +3693,8 @@ function isAfter(sourceNode, targetNode) {
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
+		sources: [],
+
 		buildsourcechooser: function(player, controls, layers, media) {
 
 			var t = this;
@@ -3683,7 +3702,7 @@ function isAfter(sourceNode, targetNode) {
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '" aria-live="assertive"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -3694,43 +3713,52 @@ function isAfter(sourceNode, targetNode) {
 					// hover
 					.hover(function() {
 						clearTimeout(hoverTimeout);
-						$(this).find('.mejs-sourcechooser-selector')
-							.removeClass('mejs-offscreen')
-							.attr('aria-expanded', 'true')
-							.attr('aria-hidden', 'false');
+						player.showSourcechooserSelector();
 					}, function() {
 						var self = $(this);
 						hoverTimeout = setTimeout(function () {
-							self.find('.mejs-sourcechooser-selector')
-								.addClass('mejs-offscreen')
-								.attr('aria-expanded', 'false')
-								.attr('aria-hidden', 'true');
+						player.hideSourcechooserSelector();
 						}, 500);
 					})
 
 					// keyboard menu activation
 					.on('keydown', function (e) {
-					  var keyCode = e.keyCode;
+						var keyCode = e.keyCode;
 
-					  switch (keyCode) {
+						switch (keyCode) {
 							case 32: // space
+								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
+									player.showSourcechooserSelector();
+								}
 								$(this).find('.mejs-sourcechooser-selector')
-									.removeClass('mejs-offscreen')
-									.attr('aria-expanded', 'true')
-									.attr('aria-hidden', 'false')
+									.find('input[type=radio]:checked').first().focus();
+								break;
+							case 13: // enter
+								player.showSourcechooserSelector();
+								$(this).find('.mejs-sourcechooser-selector')
 									.find('input[type=radio]:checked').first().focus();
 								break;
 							case 27: // esc
-								$(this).find('.mejs-sourcechooser-selector')
-									.addClass('mejs-offscreen')
-									.attr('aria-expanded', 'false')
-									.attr('aria-hidden', 'true');
+								player.hideSourcechooserSelector();
 								$(this).find('button').focus();
 								break;
 							default:
 								return true;
 								}
 							})
+
+					// close menu when tabbing away
+					.on('focusout', mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
+						// Firefox does NOT support e.relatedTarget to see which element
+						// just lost focus, so wait to find the next focused element
+						setTimeout(function () {
+							var parent = $(document.activeElement).closest('.mejs-sourcechooser-selector');
+							if (!parent.length) {
+								// focus is outside the control; close menu
+								player.hideSourcechooserSelector();
+							}
+						}, 0);
+					}, 100))
 
 					// handle clicks to the source radio buttons
 					.delegate('input[type=radio]', 'click', function() {
@@ -3759,16 +3787,43 @@ function isAfter(sourceNode, targetNode) {
 							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler, true);
 							media.load();
 						}
-				});
+
+						t.setAriaLabel(media);
+					})
+
+					// Handle click so that screen readers can toggle the menu
+					.delegate('button', 'click', function (e) {
+						if ($(this).siblings('.mejs-sourcechooser-selector').hasClass('mejs-offscreen')) {
+							player.showSourcechooserSelector();
+							$(this).siblings('.mejs-sourcechooser-selector').find('input[type=radio]:checked').first().focus();
+						} else {
+							player.hideSourcechooserSelector();
+						}
+					});
 
 			// add to list
 			for (var i in this.node.children) {
 				var src = this.node.children[i];
 				if (src.nodeName === 'SOURCE' && (media.canPlayType(src.type) == 'probably' || media.canPlayType(src.type) == 'maybe')) {
+					t.sources.push(src);
 					player.addSourceButton(src.src, src.title, src.type, media.src == src.src);
 				}
 			}
 
+			t.setAriaLabel(media);
+		},
+
+		setAriaLabel: function(media) {
+			var label = mejs.i18n.t(this.options.sourcechooserText)
+			var current = this.currentSource(media);
+
+			if (current) {
+				label += ': ' + mejs.i18n.t(current);
+			}
+
+			this.sourcechooserButton.find('button')
+				.attr('aria-label', label)
+				.attr('title', label);
 		},
 
 		addSourceButton: function(src, label, type, isCurrent) {
@@ -3781,12 +3836,24 @@ function isAfter(sourceNode, targetNode) {
 			t.sourcechooserButton.find('ul').append(
 				$('<li>'+
 						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '"' + ' />'+
-						'<label for="' + t.id + '_sourcechooser_' + label + type + '">' + label + ' (' + type + ')</label>'+
+						'<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + ' (' + type + ')</label>'+
 					'</li>')
 			);
 
 			t.adjustSourcechooserBox();
 
+		},
+
+		currentSource: function(media) {
+			var current = this.sources.filter(function(src) {
+				return src.src == media.src;
+			})[0];
+
+			if (current) {
+				return current.title || '';
+			}
+
+			return '';
 		},
 
 		adjustSourcechooserBox: function() {
@@ -3795,6 +3862,24 @@ function isAfter(sourceNode, targetNode) {
 			t.sourcechooserButton.find('.mejs-sourcechooser-selector').height(
 				t.sourcechooserButton.find('.mejs-sourcechooser-selector ul').outerHeight(true)
 			);
+		},
+
+		hideSourcechooserSelector: function () {
+			this.sourcechooserButton.find('.mejs-sourcechooser-selector')
+				.addClass('mejs-offscreen')
+				.attr('aria-expanded', 'false')
+				.attr('aria-hidden', 'true')
+				.find('input[type=radio]') // make radios not fucusable
+				.attr('tabindex', '-1');
+		},
+
+		showSourcechooserSelector: function () {
+			this.sourcechooserButton.find('.mejs-sourcechooser-selector')
+				.removeClass('mejs-offscreen')
+				.attr('aria-expanded', 'true')
+				.attr('aria-hidden', 'false')
+				.find('input[type=radio]')
+				.attr('tabindex', '0');
 		}
 	});
 

@@ -15,7 +15,7 @@
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '" aria-live="assertive"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-controls="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '" aria-live="assertive"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -31,7 +31,7 @@
 						var self = $(this);
 						hoverTimeout = setTimeout(function () {
 						player.hideSourcechooserSelector();
-						}, 500);
+						}, t.options.menuTimeoutMouseLeave);
 					})
 
 					// keyboard menu activation

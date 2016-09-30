@@ -94,6 +94,8 @@ function isAfter(sourceNode, targetNode) {
 		controlsTimeoutMouseEnter: 2500,
 		// Time in ms to trigger the timer when mouse leaves
 		controlsTimeoutMouseLeave: 1000,
+    // Time in ms to hide menu on when mouse leaves
+    menuTimeoutMouseLeave: 500,
 		// force iPad's native controls
 		iPadUseNativeControls: false,
 		// force iPhone's native controls

@@ -24,7 +24,8 @@
 					speedButton = null,
 					speedSelector = null,
 					playbackSpeed = null,
-					inputId = null;
+          inputId = null,
+          isCurrent = null;
 
 				var speeds = [];
 				var defaultInArray = false;
@@ -71,26 +72,28 @@
 				}
 
 				var html = '<div class="mejs-button mejs-speed-button">' +
-							'<button type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
-							'<div class="mejs-speed-selector">' +
+							'<button role="button" aria-haspopup="true" aria-controls="' + t.id + '" type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
+							'<div class="mejs-speed-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">' +
 							'<ul>';
 
 				for (i = 0, il = speeds.length; i<il; i++) {
 					inputId = t.id + '-speed-' + speeds[i].value;
+          isCurrent = (speeds[i].value === t.options.defaultSpeed);
 					html += '<li>' +
-								'<input type="radio" name="speed" ' +
+								'<input type="radio" name="speed" role="menuitemradio" class="mejs-offscreen"' +
 											'value="' + speeds[i].value + '" ' +
 											'id="' + inputId + '" ' +
-											(speeds[i].value === t.options.defaultSpeed ? ' checked' : '') +
+											(isCurrent ? ' checked="checked"' : '') +
+                      ' aria-selected="' + isCurrent + '"' +
 											' />' +
-								'<label for="' + inputId + '" ' +
-											(speeds[i].value === t.options.defaultSpeed ? ' class="mejs-speed-selected"' : '') +
+								'<label for="' + inputId + '" ' + 'aria-hidden="true"' +
+											(isCurrent ? ' class="mejs-speed-selected"' : '') +
 											'>' + speeds[i].name + '</label>' +
 							'</li>';
 				}
 				html += '</ul></div></div>';
 
-				speedButton = $(html).appendTo(controls);
+				player.speedButton = speedButton = $(html).appendTo(controls);
 				speedSelector = speedButton.find('.mejs-speed-selector');
 
 				playbackSpeed = t.options.defaultSpeed;
@@ -103,6 +106,10 @@
 
 				speedSelector
 					.on('click', 'input[type="radio"]', function() {
+						// set aria states
+						$(this).attr('aria-selected', true).attr('checked', 'checked');
+						$(this).closest('.mejs-speed-selector').find('input[type=radio]').not(this).attr('aria-selected', 'false').removeAttr('checked');
+
 						var newSpeed = $(this).attr('value');
 						playbackSpeed = newSpeed;
 						media.playbackRate = parseFloat(newSpeed);
@@ -113,14 +120,93 @@
 						speedButton.find('input[type="radio"]:checked').next().addClass('mejs-speed-selected');
 					});
 				speedButton
+          // set size on demand
 					.one( 'mouseenter focusin', function() {
 						speedSelector
 							.height(
 								speedButton.find('.mejs-speed-selector ul').outerHeight(true) +
 								speedButton.find('.mejs-speed-translations').outerHeight(true))
 							.css('top', (-1 * speedSelector.height()) + 'px');
+          })
+
+          // hover
+          .hover(function() {
+            clearTimeout(hoverTimeout);
+            player.showSpeedSelector();
+          }, function() {
+            var self = $(this);
+            hoverTimeout = setTimeout(function () {
+              player.hideSpeedSelector();
+            }, t.options.menuTimeoutMouseLeave);
+          })
+
+          // keyboard menu activation
+          .on('keydown', function (e) {
+            var keyCode = e.keyCode;
+
+            switch (keyCode) {
+							case 32: // space
+								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
+									player.showSpeedSelector();
+								}
+								$(this).find('.mejs-speed-selector')
+									.find('input[type=radio]:checked').first().focus();
+								break;
+							case 13: // enter
+								player.showSpeedSelector();
+								$(this).find('.mejs-speed-selector')
+									.find('input[type=radio]:checked').first().focus();
+								break;
+							case 27: // esc
+								player.hideSpeedSelector();
+								$(this).find('button').focus();
+								break;
+							default:
+								return true;
+						}
+          })
+
+					// close menu when tabbing away
+					.on('focusout', mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
+						// Firefox does NOT support e.relatedTarget to see which element
+						// just lost focus, so wait to find the next focused element
+						setTimeout(function () {
+							var parent = $(document.activeElement).closest('.mejs-speed-selector');
+							if (!parent.length) {
+								// focus is outside the control; close menu
+								player.hideSpeedSelector();
+							}
+						}, 0);
+					}, 100))
+
+					// Handle click so that screen readers can toggle the menu
+					.on('click', 'button', function (e) {
+						if ($(this).siblings('.mejs-speed-selector').hasClass('mejs-offscreen')) {
+							player.showSpeedSelector();
+							$(this).siblings('.mejs-speed-selector').find('input[type=radio]:checked').first().focus();
+						} else {
+							player.hideSpeedSelector();
+						}
 					});
 			}
+    },
+
+		hideSpeedSelector: function () {
+			this.speedButton.find('.mejs-speed-selector')
+				.addClass('mejs-offscreen')
+				.attr('aria-expanded', 'false')
+				.attr('aria-hidden', 'true')
+				.find('input[type=radio]') // make radios not fucusable
+				.attr('tabindex', '-1');
+		},
+
+		showSpeedSelector: function () {
+			this.speedButton.find('.mejs-speed-selector')
+				.removeClass('mejs-offscreen')
+				.attr('aria-expanded', 'true')
+				.attr('aria-hidden', 'false')
+				.find('input[type=radio]')
+				.attr('tabindex', '0');
 		}
 	});
 

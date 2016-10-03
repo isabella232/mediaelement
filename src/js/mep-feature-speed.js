@@ -80,7 +80,7 @@
 					inputId = t.id + '-speed-' + speeds[i].value;
           isCurrent = (speeds[i].value === t.options.defaultSpeed);
 					html += '<li>' +
-								'<input type="radio" name="speed" role="menuitemradio" class="mejs-offscreen"' +
+								'<input type="radio" name="speed" role="menuitemradio"' +
 											'value="' + speeds[i].value + '" ' +
 											'id="' + inputId + '" ' +
 											(isCurrent ? ' checked="checked"' : '') +

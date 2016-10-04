@@ -18,14 +18,15 @@
 
 		buildspeed: function(player, controls, layers, media) {
 			var t = this;
+			var hoverTimeout;
 
 			if (t.media.pluginType == 'native') {
 				var
 					speedButton = null,
 					speedSelector = null,
 					playbackSpeed = null,
-          inputId = null,
-          isCurrent = null;
+					inputId = null,
+					isCurrent = null;
 
 				var speeds = [];
 				var defaultInArray = false;
@@ -78,13 +79,13 @@
 
 				for (i = 0, il = speeds.length; i<il; i++) {
 					inputId = t.id + '-speed-' + speeds[i].value;
-          isCurrent = (speeds[i].value === t.options.defaultSpeed);
+					isCurrent = (speeds[i].value === t.options.defaultSpeed);
 					html += '<li>' +
 								'<input type="radio" name="speed" role="menuitemradio"' +
 											'value="' + speeds[i].value + '" ' +
 											'id="' + inputId + '" ' +
 											(isCurrent ? ' checked="checked"' : '') +
-                      ' aria-selected="' + isCurrent + '"' +
+											' aria-selected="' + isCurrent + '"' +
 											' />' +
 								'<label for="' + inputId + '" ' + 'aria-hidden="true"' +
 											(isCurrent ? ' class="mejs-speed-selected"' : '') +
@@ -120,31 +121,31 @@
 						speedButton.find('input[type="radio"]:checked').next().addClass('mejs-speed-selected');
 					});
 				speedButton
-          // set size on demand
+				// set size on demand
 					.one( 'mouseenter focusin', function() {
 						speedSelector
 							.height(
 								speedButton.find('.mejs-speed-selector ul').outerHeight(true) +
 								speedButton.find('.mejs-speed-translations').outerHeight(true))
 							.css('top', (-1 * speedSelector.height()) + 'px');
-          })
+						})
 
-          // hover
-          .hover(function() {
-            clearTimeout(hoverTimeout);
-            player.showSpeedSelector();
-          }, function() {
-            var self = $(this);
-            hoverTimeout = setTimeout(function () {
-              player.hideSpeedSelector();
-            }, t.options.menuTimeoutMouseLeave);
-          })
+						// hover
+						.hover(function() {
+							clearTimeout(hoverTimeout);
+							player.showSpeedSelector();
+						}, function() {
+							var self = $(this);
+							hoverTimeout = setTimeout(function () {
+								player.hideSpeedSelector();
+							}, t.options.menuTimeoutMouseLeave);
+						})
 
-          // keyboard menu activation
-          .on('keydown', function (e) {
-            var keyCode = e.keyCode;
+						// keyboard menu activation
+						.on('keydown', function (e) {
+							var keyCode = e.keyCode;
 
-            switch (keyCode) {
+							switch (keyCode) {
 							case 32: // space
 								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
 									player.showSpeedSelector();
@@ -164,7 +165,7 @@
 							default:
 								return true;
 						}
-          })
+					})
 
 					// close menu when tabbing away
 					.on('focusout', mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
@@ -189,7 +190,7 @@
 						}
 					});
 			}
-    },
+		},
 
 		hideSpeedSelector: function () {
 			this.speedButton.find('.mejs-speed-selector')

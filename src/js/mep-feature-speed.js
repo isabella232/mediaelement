@@ -135,7 +135,6 @@
 							clearTimeout(hoverTimeout);
 							player.showSpeedSelector();
 						}, function() {
-							var self = $(this);
 							hoverTimeout = setTimeout(function () {
 								player.hideSpeedSelector();
 							}, t.options.menuTimeoutMouseLeave);
@@ -197,7 +196,7 @@
 				.addClass('mejs-offscreen')
 				.attr('aria-expanded', 'false')
 				.attr('aria-hidden', 'true')
-				.find('input[type=radio]') // make radios not fucusable
+				.find('input[type=radio]') // make radios not focusable
 				.attr('tabindex', '-1');
 		},
 

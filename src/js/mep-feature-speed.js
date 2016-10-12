@@ -73,7 +73,7 @@
 				}
 
 				var html = '<div class="mejs-button mejs-speed-button">' +
-							'<button role="button" aria-haspopup="true" aria-controls="' + t.id + '" type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
+							'<button role="button" aria-haspopup="true" aria-controls="' + t.id + '" type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '" aria-live="assertive">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
 							'<div class="mejs-speed-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">' +
 							'<ul>';
 
@@ -86,6 +86,7 @@
 											'id="' + inputId + '" ' +
 											(isCurrent ? ' checked="checked"' : '') +
 											' aria-selected="' + isCurrent + '"' +
+											' aria-label="' + getSpeedNameFromValue(speeds[i].value) + '"' +
 											' />' +
 								'<label for="' + inputId + '" ' + 'aria-hidden="true"' +
 											(isCurrent ? ' class="mejs-speed-selected"' : '') +

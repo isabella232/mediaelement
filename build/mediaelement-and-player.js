@@ -5031,7 +5031,7 @@ function isAfter(sourceNode, targetNode) {
 				}
 
 				var html = '<div class="mejs-button mejs-speed-button">' +
-							'<button role="button" aria-haspopup="true" aria-controls="' + t.id + '" type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
+							'<button role="button" aria-haspopup="true" aria-controls="' + t.id + '" type="button" aria-label="' + speedLabel(t.options.defaultSpeed) + '" aria-live="assertive">' + getSpeedNameFromValue(t.options.defaultSpeed) + '</button>' +
 							'<div class="mejs-speed-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">' +
 							'<ul>';
 
@@ -5044,6 +5044,7 @@ function isAfter(sourceNode, targetNode) {
 											'id="' + inputId + '" ' +
 											(isCurrent ? ' checked="checked"' : '') +
 											' aria-selected="' + isCurrent + '"' +
+											' aria-label="' + getSpeedNameFromValue(speeds[i].value) + '"' +
 											' />' +
 								'<label for="' + inputId + '" ' + 'aria-hidden="true"' +
 											(isCurrent ? ' class="mejs-speed-selected"' : '') +
@@ -6024,7 +6025,7 @@ function isAfter(sourceNode, targetNode) {
 
 			t.sourcechooserButton.find('ul').append(
 				$('<li>'+
-						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '"' + ' />'+
+						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '" aria-label="' + label + '"' + ' />'+
 						'<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + ' (' + type + ')</label>'+
 					'</li>')
 			);

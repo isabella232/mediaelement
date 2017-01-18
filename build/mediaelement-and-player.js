@@ -4479,8 +4479,6 @@ function isAfter(sourceNode, targetNode) {
 
 		isNativeFullScreen: false,
 
-		isInIframe: false,
-
 		// Possible modes
 		// (1) 'native-native' 	HTML5 video  + browser fullscreen (IE10+, etc.)
 		// (2) 'plugin-native' 	plugin video + browser fullscreen (fails in some versions of Firefox)
@@ -4494,8 +4492,6 @@ function isAfter(sourceNode, targetNode) {
 
 			if (!player.isVideo)
 				return;
-
-			player.isInIframe = (window.location != window.parent.location);
 
 			// detect on start
 			media.addEventListener('loadstart', function() { player.detectFullscreenMode(); });
@@ -4802,38 +4798,10 @@ function isAfter(sourceNode, targetNode) {
 			t.normalHeight = t.container.height();
 			t.normalWidth = t.container.width();
 
-
-
 			// attempt to do true fullscreen
 			if (t.fullscreenMode === 'native-native' || t.fullscreenMode === 'plugin-native') {
 
 				mejs.MediaFeatures.requestFullScreen(t.container[0]);
-				//return;
-
-				if (t.isInIframe) {
-					// sometimes exiting from fullscreen doesn't work
-					// notably in Chrome <iframe>. Fixed in version 17
-					setTimeout(function checkFullscreen() {
-
-						if (t.isNativeFullScreen) {
-							var percentErrorMargin = 0.002, // 0.2%
-								windowWidth = $(window).width(),
-								screenWidth = screen.width,
-								absDiff = Math.abs(screenWidth - windowWidth),
-								marginError = screenWidth * percentErrorMargin;
-
-							// check if the video is suddenly not really fullscreen
-							if (absDiff > marginError) {
-								// manually exit
-								t.exitFullScreen();
-							} else {
-								// test again
-								setTimeout(checkFullscreen, 500);
-							}
-						}
-
-					}, 1000);
-				}
 
 			} else if (t.fullscreeMode == 'fullwindow') {
 				// move into position

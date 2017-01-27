@@ -2504,6 +2504,11 @@ function isAfter(sourceNode, targetNode) {
 				t.$media.removeAttr('controls');
 				var videoPlayerTitle = t.isVideo ?
 					mejs.i18n.t('Video Player') : mejs.i18n.t('Audio Player');
+
+				if (t.options.titleText) {
+					videoPlayerTitle = t.options.titleText;
+				}
+
 				// insert description for screen readers
 				$('<span class="mejs-offscreen">' + videoPlayerTitle + '</span>').insertBefore(t.$media);
 				// build container

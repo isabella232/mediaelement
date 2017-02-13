@@ -47,6 +47,8 @@ function isAfter(sourceNode, targetNode) {
 	mejs.MepDefaults = {
 		// url to poster (to fix iOS 3.x)
 		poster: '',
+		// Whether to hide the poster on play (useful for audio files)
+		hidePosterOnPlay: true,
 		// When the video is ended, we can show the poster.
 		showPosterWhenEnded: false,
 		// default if the <video width> is not specified
@@ -1175,7 +1177,7 @@ function isAfter(sourceNode, targetNode) {
 			}
 
 			media.addEventListener('play',function() {
-				poster.hide();
+				if (player.options.hidePosterOnPlay) { poster.hide(); }
 			}, false);
 
 			if(player.options.showPosterWhenEnded && player.options.autoRewind){

@@ -791,7 +791,7 @@ function isAfter(sourceNode, targetNode) {
 
 						}
 					}
-					t.media.pause();
+					t.media.stop();
 
 					if (t.setProgressRail) {
 						t.setProgressRail();
@@ -1662,6 +1662,9 @@ function isAfter(sourceNode, targetNode) {
 				togglePlayPause('pse');
 			}, false);
 			media.addEventListener('paused',function() {
+				togglePlayPause('pse');
+			}, false);
+			media.addEventListener('unstarted',function() {
 				togglePlayPause('pse');
 			}, false);
 		}

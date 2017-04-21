@@ -65,6 +65,9 @@
 			media.addEventListener('paused',function() {
 				togglePlayPause('pse');
 			}, false);
+			media.addEventListener('unstarted',function() {
+				togglePlayPause('pse');
+			}, false);
 		}
 	});
 	

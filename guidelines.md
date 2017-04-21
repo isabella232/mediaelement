@@ -87,13 +87,13 @@ If it is a translation that wants to be added, a couple of considerations need t
 
     if (typeof exports.[lang] === 'undefined') {
         exports.[lang] = {
-        
+
             // Find the family group number; see `/src/js/me-18n.js`
             'mejs.plural-form': 14,
-            
+
             // Regular translations; to get the entire list of elements, always refer to `me-i18n-locale-en.js`
-            ... 
-            
+            ...
+
             // Example for pluralization following the form `nplurals=3; plural=(n%10==1 ? 0 : n%10==2 ? 1 : 2);`
             // meaning that if the modulo between number indicated and 10 is 1, then the first string will be used;
             // if the modulo between number indicated and 10 is 2, it will use the second one; otherwise, it will use the third case

@@ -71,7 +71,7 @@
 
 						pos = x - offset.left;
 						percentage = (pos / width);
-						newTime = (percentage <= 0.02) ? 0 : percentage * media.duration;
+						newTime = percentage * media.duration;
 
 						// seek to where the mouse is
 						if (mouseIsDown && newTime !== media.currentTime) {
@@ -131,6 +131,8 @@
 					seekTime = media.currentTime,
 					seekForward  = player.options.defaultSeekForwardInterval(media),
 					seekBackward = player.options.defaultSeekBackwardInterval(media);
+					jumpForward  = player.options.defaultJumpForwardInterval(media),
+					jumpBackward = player.options.defaultJumpBackwardInterval(media);
 
 				switch (keyCode) {
 					case 37: // left
@@ -140,6 +142,12 @@
 					case 39: // Right
 					case 38: // Up
 						seekTime += seekForward;
+						break;
+					case 33: // Page Up
+						seekTime += jumpForward;
+						break;
+					case 34: // Page Down
+						seekTime -= jumpBackward;
 						break;
 					case 36: // Home
 						seekTime = 0;
@@ -241,7 +249,7 @@
 			if (target && target.buffered && target.buffered.length > 0 && target.buffered.end && target.duration) {
 				// account for a real array with multiple values - always read the end of the last buffer
 				percent = target.buffered.end(target.buffered.length - 1) / target.duration;
-			} 
+			}
 			// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
 			// to be anything other than 0. If the byte count is available we use this instead.
 			// Browsers that support the else if do not seem to have the bufferedBytes value and
@@ -266,12 +274,12 @@
 		setCurrentRail: function() {
 
 			var t = this;
-		
+
 			if (t.media.currentTime !== undefined && t.media.duration) {
 
 				// update bar and handle
 				if (t.total && t.handle) {
-					var 
+					var
 						newWidth = Math.round(t.total.width() * t.media.currentTime / t.media.duration),
 						handlePos = newWidth - Math.round(t.handle.outerWidth(true) / 2);
 

@@ -6,6 +6,8 @@
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
+		sources: [],
+
 		buildsourcechooser: function(player, controls, layers, media) {
 
 			var
@@ -16,7 +18,7 @@
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" role="button" aria-haspopup="true" aria-owns="' + t.id + '" title="' + sourceTitle + '" aria-label="' + sourceTitle + '"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-controls="' + t.id + '" title="' + sourceTitle + '" aria-label="' + sourceTitle + '" aria-live="assertive"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -29,10 +31,9 @@
 						clearTimeout(hoverTimeout);
 						player.showSourcechooserSelector();
 					}, function() {
-						var self = $(this);
 						hoverTimeout = setTimeout(function () {
 						player.hideSourcechooserSelector();
-						}, 500);
+						}, t.options.menuTimeoutMouseLeave);
 					})
 
 					// keyboard menu activation
@@ -101,6 +102,8 @@
 							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler, true);
 							media.load();
 						}
+
+						t.setAriaLabel(media);
 					})
 
 					// Handle click so that screen readers can toggle the menu
@@ -117,9 +120,25 @@
 			for (var i in this.node.children) {
 				var src = this.node.children[i];
 				if (src.nodeName === 'SOURCE' && (media.canPlayType(src.type) == 'probably' || media.canPlayType(src.type) == 'maybe')) {
+					t.sources.push(src);
 					player.addSourceButton(src.src, src.title, src.type, media.src == src.src);
 				}
 			}
+
+			t.setAriaLabel(media);
+		},
+
+		setAriaLabel: function(media) {
+			var label = this.options.sourcechooserText ? this.options.sourcechooserText : mejs.i18n.t('mejs.source-chooser');
+			var current = this.currentSource(media);
+
+			if (current) {
+				label += ': ' + current;
+			}
+
+			this.sourcechooserButton.find('button')
+				.attr('aria-label', label)
+				.attr('title', label);
 		},
 
 		addSourceButton: function(src, label, type, isCurrent) {
@@ -131,13 +150,25 @@
 
 			t.sourcechooserButton.find('ul').append(
 				$('<li>'+
-						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '"' + ' />'+
+						'<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + 'aria-selected="' + isCurrent + '" aria-label="' + label + '"' + ' />'+
 						'<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + ' (' + type + ')</label>'+
 					'</li>')
 			);
 
 			t.adjustSourcechooserBox();
 
+		},
+
+		currentSource: function(media) {
+			var current = this.sources.filter(function(src) {
+				return src.src == media.src;
+			})[0];
+
+			if (current) {
+				return current.title || '';
+			}
+
+			return '';
 		},
 
 		adjustSourcechooserBox: function() {
@@ -153,7 +184,7 @@
 				.addClass('mejs-offscreen')
 				.attr('aria-expanded', 'false')
 				.attr('aria-hidden', 'true')
-				.find('input[type=radio]') // make radios not fucusable
+				.find('input[type=radio]') // make radios not focusable
 				.attr('tabindex', '-1');
 		},
 

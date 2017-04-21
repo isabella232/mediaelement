@@ -1,9 +1,35 @@
+/**
+ * Returns true if targetNode appears after sourceNode in the dom.
+ * @param {HTMLElement} sourceNode - the source node for comparison
+ * @param {HTMLElement} targetNode - the node to compare against sourceNode
+ */
+function isAfter(sourceNode, targetNode) {
+	return !!(
+		sourceNode &&
+		targetNode &&
+		sourceNode.compareDocumentPosition(targetNode) & Node.DOCUMENT_POSITION_PRECEDING
+	);
+}
+
+function constrainedSeekTo(player, media, targetTime) {
+	if (!isNaN(media.duration) && media.duration > 0) {
+		if (player.isVideo) {
+			player.showControls();
+			player.startControlsTimer();
+		}
+		var newTime = Math.min(Math.max(0, targetTime), media.duration);
+		media.setCurrentTime(newTime);
+	}
+}
+
 (function ($) {
 
 	// default player values
 	mejs.MepDefaults = {
 		// url to poster (to fix iOS 3.x)
 		poster: '',
+		// Whether to hide the poster on play (useful for audio files)
+		hidePosterOnPlay: true,
 		// When the video is ended, we can show the poster.
 		showPosterWhenEnded: false,
 		// default if the <video width> is not specified
@@ -76,6 +102,8 @@
 		controlsTimeoutMouseEnter: 2500,
 		// Time in ms to trigger the timer when mouse leaves
 		controlsTimeoutMouseLeave: 1000,
+		// Time in ms to hide menu on when mouse leaves
+		menuTimeoutMouseLeave: 500,
 		// force iPad's native controls
 		iPadUseNativeControls: false,
 		// force iPhone's native controls
@@ -170,6 +198,24 @@
 										var newTime = Math.min(media.currentTime + player.options.defaultSeekForwardInterval(media), media.duration);
 										media.setCurrentTime(newTime);
 								}
+						}
+				},
+				{
+						keys: [
+								33, // PAGE UP
+						],
+						action: function(player, media) {
+							var newTime = media.currentTime + player.options.defaultJumpBackwardInterval(media);
+							constrainedSeekTo(player, media, newTime);
+						}
+				},
+				{
+						keys: [
+								34, // PAGE DOWN
+						],
+						action: function(player, media) {
+							var newTime = media.currentTime + player.options.defaultJumpForwardInterval(media);
+							constrainedSeekTo(player, media, newTime);
 						}
 				},
 				{
@@ -317,6 +363,11 @@
 				t.$media.removeAttr('controls');
 				var videoPlayerTitle = t.isVideo ?
 					mejs.i18n.t('mejs.video-player') : mejs.i18n.t('mejs.audio-player');
+
+				if (t.options.titleText) {
+					videoPlayerTitle = t.options.titleText;
+				}
+
 				// insert description for screen readers
 				$('<span class="mejs-offscreen">' + videoPlayerTitle + '</span>').insertBefore(t.$media);
 				// build container
@@ -568,9 +619,9 @@
 
 		// Sets up all controls and events
 		meReady: function(media, domNode) {
-			
-			var
-				t = this,
+
+
+			var t = this,
 				mf = mejs.MediaFeatures,
 				autoplayAttr = domNode.getAttribute('autoplay'),
 				autoplay = !(typeof autoplayAttr == 'undefined' || autoplayAttr === null || autoplayAttr === 'false'),
@@ -1166,7 +1217,7 @@
 			}
 
 			media.addEventListener('play',function() {
-				poster.hide();
+				if (player.options.hidePosterOnPlay) { poster.hide(); }
 			}, false);
 
 			if(player.options.showPosterWhenEnded && player.options.autoRewind){

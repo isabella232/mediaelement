@@ -977,6 +977,8 @@ mejs.MediaElementDefaults = {
 	// custom error message in case media cannot be played; otherwise, Download File
 	// link will be displayed
 	customError: "",
+	//youtube player parameters, see https://developers.google.com/youtube/player_parameters
+	youtubePlayerVars: { controls: 0 },
 	success: function () { },
 	error: function () { }
 };
@@ -1025,7 +1027,7 @@ mejs.HtmlMediaElementShim = {
 		// test for HTML5 and plugin capabilities
 		playback = this.determinePlayback(htmlMediaElement, options, mejs.MediaFeatures.supportsMediaTag, isMediaTag, src);
 		playback.url = (playback.url !== null) ? mejs.Utility.absolutizeUrl(playback.url) : '';
-        	playback.scheme = mejs.Utility.determineScheme(playback.url);
+		playback.scheme = mejs.Utility.determineScheme(playback.url);
 
 		if (playback.method == 'native') {
 			// second fix for android
@@ -1121,9 +1123,9 @@ mejs.HtmlMediaElementShim = {
 		
 		// special case for Chromium to specify natively supported video codecs (i.e. WebM and Theora) 
 		if (result.isVideo && mejs.MediaFeatures.isChromium) {
-			htmlMediaElement.canPlayType = function(type) { 
+			htmlMediaElement.canPlayType = function(type) {
 				return (type.match(/video\/(webm|ogv|ogg)/gi) !== null) ? 'maybe' : '';
-			}; 
+			};
 		}
 
 		// test for native playback first
@@ -1548,9 +1550,9 @@ mejs.HtmlMediaElementShim = {
 						videoId: videoId,
 						height: height,
 						width: width,
-                        scheme: playback.scheme,
-						variables: options.youtubeIframeVars
-					};				
+						scheme: playback.scheme,
+						playerVars: options.youtubePlayerVars,
+					};
 				
 				// favor iframe version of YouTube
 				if (window.postMessage) {
@@ -1713,6 +1715,29 @@ mejs.HtmlMediaElementShim = {
  - determine when to use iframe (Firefox, Safari, Mobile) vs. Flash (Chrome, IE)
  - fullscreen?
 */
+function createToggleTimeupdate() {
+  var intervalId = null;
+
+  var clear = function() {
+    clearInterval(intervalId);
+    intervalId = null;
+  };
+
+  return function(player, pluginMediaElement, shouldBeOn) {
+    if (!intervalId && shouldBeOn) {
+      intervalId = setInterval(function() {
+        // stop timeupdates when the iframe is no longer in the dom
+        if (document.body.contains(pluginMediaElement.pluginElement)) {
+          mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'timeupdate');
+        } else {
+          clear();
+        }
+      }, 250);
+    } else if (intervalId && !shouldBeOn) {
+      clear();
+    }
+  };
+}
 
 // YouTube Flash and Iframe API
 mejs.YouTubeApi = {
@@ -1746,7 +1771,7 @@ mejs.YouTubeApi = {
 			height: settings.height,
 			width: settings.width,
 			videoId: settings.videoId,
-			playerVars: mejs.$.extend({}, defaultVars, settings.variables),
+			playerVars: settings.playerVars,
 			events: {
 				'onReady': function(e) {
 					
@@ -1762,12 +1787,19 @@ mejs.YouTubeApi = {
 					// init mejs
 					pluginMediaElement.success(pluginMediaElement, pluginMediaElement.pluginElement);
 
+					mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'loadstart');
 					mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'canplay');
-					
-					// create timer
-					setInterval(function() {
-						mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'timeupdate');
-					}, 250);
+
+					var originalSeekTo = settings.pluginMediaElement.pluginApi.seekTo.bind(player);
+
+					settings.pluginMediaElement.pluginApi.seekTo = function(seconds, allowSeekAhead) {
+						originalSeekTo(seconds, allowSeekAhead);
+						// Allow player to update before triggering timeupdate event
+						setTimeout(function() {
+							mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'seeked');
+							mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'timeupdate');
+						}, 100);
+					}
 
 					if (typeof pluginMediaElement.attributes.autoplay !== 'undefined') {
 						player.playVideo();
@@ -1903,37 +1935,46 @@ mejs.YouTubeApi = {
 			mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'timeupdate');
 		}, 250);
 		
+
+		mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'loadstart');
 		mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'canplay');
 	},
 	
+
+	toggleTimeupdates: createToggleTimeupdate(),
+
 	handleStateChange: function(youTubeState, player, pluginMediaElement) {
 		switch (youTubeState) {
-			case -1: // not started
+			case YT.PlayerState.UNSTARTED:
 				pluginMediaElement.paused = true;
 				pluginMediaElement.ended = true;
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'loadedmetadata');
-				//createYouTubeEvent(player, pluginMediaElement, 'loadeddata');
+				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'unstarted');
+				mejs.YouTubeApi.toggleTimeupdates(player, pluginMediaElement, false);
 				break;
-			case 0:
+			case YT.PlayerState.ENDED:
 				pluginMediaElement.paused = false;
 				pluginMediaElement.ended = true;
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'ended');
+				mejs.YouTubeApi.toggleTimeupdates(player, pluginMediaElement, false);
 				break;
-			case 1:
+			case YT.PlayerState.PLAYING:
 				pluginMediaElement.paused = false;
 				pluginMediaElement.ended = false;				
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'play');
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'playing');
+				mejs.YouTubeApi.toggleTimeupdates(player, pluginMediaElement, true);
 				break;
-			case 2:
+			case YT.PlayerState.PAUSED:
 				pluginMediaElement.paused = true;
 				pluginMediaElement.ended = false;				
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'pause');
+				mejs.YouTubeApi.toggleTimeupdates(player, pluginMediaElement, false);
 				break;
-			case 3: // buffering
+			case YT.PlayerState.BUFFERING:
 				mejs.YouTubeApi.createEvent(player, pluginMediaElement, 'progress');
 				break;
-			case 5:
+			case YT.PlayerState.CUED:
 				// cued?
 				break;						
 			
@@ -2364,78 +2405,4 @@ window.MediaElement = mejs.MediaElement;
 		mejs[mejsL10n.language] = mejsL10n.strings;
 	}
 
-}(mejs.i18n.locale.strings));
-/*!
- * This is a i18n.locale language object.
- *
- * English; This can serve as a template for other languages to translate
- *
- * @author
- *   TBD
- *   Sascha Greuel (Twitter: @SoftCreatR)
- *
- * @see
- *   me-i18n.js
- *
- * @params
- *  - exports - CommonJS, window ..
- */
-(function (exports) {
-    "use strict";
-
-    if (exports.en === undefined) {
-        exports.en = {
-            "mejs.plural-form": 1,
-
-            // me-shim
-            "mejs.download-file": "Download File",
-
-            // mep-feature-contextmenu
-            "mejs.fullscreen-off": "Turn off Fullscreen",
-            "mejs.fullscreen-on": "Go Fullscreen",
-            "mejs.download-video": "Download Video",
-
-            // mep-feature-fullscreen
-            "mejs.fullscreen": "Fullscreen",
-
-            // mep-feature-jumpforward
-            "mejs.time-jump-forward": ["Jump forward 1 second", "Jump forward %1 seconds"],
-
-            // mep-feature-playpause
-            "mejs.play": "Play",
-            "mejs.pause": "Pause",
-
-            // mep-feature-postroll
-            "mejs.close": "Close",
-
-            // mep-feature-progress
-            "mejs.time-slider": "Time Slider",
-            "mejs.time-help-text": "Use Left/Right Arrow keys to advance one second, Up/Down arrows to advance ten seconds.",
-
-            // mep-feature-skipback
-            "mejs.time-skip-back": ["Skip back 1 second", "Skip back %1 seconds"],
-
-            // mep-feature-tracks
-            "mejs.captions-subtitles": "Captions/Subtitles",
-            "mejs.none": "None",
-
-            // mep-feature-volume
-            "mejs.mute-toggle": "Mute Toggle",
-            "mejs.volume-help-text": "Use Up/Down Arrow keys to increase or decrease volume.",
-            "mejs.unmute": "Unmute",
-            "mejs.mute": "Mute",
-            "mejs.volume-slider": "Volume Slider",
-
-            // mep-player
-            "mejs.video-player": "Video Player",
-            "mejs.audio-player": "Audio Player",
-
-            // mep-feature-ads
-            "mejs.ad-skip": "Skip ad",
-            "mejs.ad-skip-info": ["Skip in 1 second", "Skip in %1 seconds"],
-
-            // mep-feature-sourcechooser
-            "mejs.source-chooser": "Source Chooser"
-        };
-    }
 }(mejs.i18n.locale.strings));

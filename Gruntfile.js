@@ -36,9 +36,6 @@ module.exports = function(grunt) {
                     'src/js/me-mediaelements.js',
                     'src/js/me-shim.js',
                     'src/js/me-i18n.js'
-                    // Bug #1263
-                    //'src/js/me-i18n-locale-de.js',
-                    //'src/js/me-i18n-locale-zh.js'
                 ],
                 dest: 'build/mediaelement.js'
             },

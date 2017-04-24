@@ -49,6 +49,8 @@ enablePseudoStreaming: false,
 pseudoStreamingStartQueryParam: 'start',
 // name of silverlight file
 silverlightName: 'silverlightmediaelement.xap',
+// Extra configuration for YouTube <iframe>
+youtubeIframeVars: {},
 // default if the <video width> is not specified
 defaultVideoWidth: 480,
 // default if the <video height> is not specified
@@ -207,17 +209,23 @@ slidesSelector: '',
 skipBackInterval: 30,
 // Enable tooltip that shows time in progress bar
 enableProgressTooltip: true,
-// The following items are set for accessibility purposes in different elements of the player
-playText: mejs.i18n.t('Play'),
-pauseText: mejs.i18n.t('Pause'),
-stopText: mejs.i18n.t('Stop'),
-titleText: mejs.i18n.t('Video Player'),
-tracksText: mejs.i18n.t('Captions/Subtitles'),
-postrollCloseText: mejs.i18n.t('Close'),
-allyVolumeControlText: mejs.i18n.t('Use Up/Down Arrow keys to increase or decrease volume.'),
-muteText: mejs.i18n.t('Mute Toggle'),
-fullscreenText: mejs.i18n.t('Fullscreen'),
-skipBackText: mejs.i18n.t('Skip back %1 seconds'), // %1 will be replaced with skipBackInterval in this string
+// Specify the color of marker
+markerColor: '#E9BC3D',
+// Specify marker times in seconds 
+markers: [],
+// Callback function invoked when a marker position is reached
+markerCallback: function(media, time) {}
+// Customizable text elements
+// NOTE: They won't be translated if set through here, unless the proper translation is added
+playText: '',
+pauseText: '',
+tracksText: '',
+postrollCloseText: '',
+muteText: '',
+allyVolumeControlText: '',
+fullscreenText: '',
+skipBackText: '',
+sourcechooserText: '',
 ```
 
 <a id="api"></a>

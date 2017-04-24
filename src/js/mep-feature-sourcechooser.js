@@ -2,7 +2,7 @@
 (function($) {
 
 	$.extend(mejs.MepDefaults, {
-		sourcechooserText: 'Source Chooser'
+		sourcechooserText: ''
 	});
 
 	$.extend(MediaElementPlayer.prototype, {
@@ -10,12 +10,15 @@
 
 		buildsourcechooser: function(player, controls, layers, media) {
 
-			var t = this;
-			var hoverTimeout;
+			var
+				t = this,
+				sourceTitle = t.options.sourcechooserText ? t.options.sourcechooserText : mejs.i18n.t('mejs.source-chooser'),
+				hoverTimeout
+			;
 
 			player.sourcechooserButton =
 				$('<div class="mejs-button mejs-sourcechooser-button">'+
-						'<button type="button" role="button" aria-haspopup="true" aria-controls="' + t.id + '" title="' + t.options.sourcechooserText + '" aria-label="' + t.options.sourcechooserText + '" aria-live="assertive"></button>'+
+						'<button type="button" role="button" aria-haspopup="true" aria-controls="' + t.id + '" title="' + sourceTitle + '" aria-label="' + sourceTitle + '" aria-live="assertive"></button>'+
 						'<div class="mejs-sourcechooser-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 							'</ul>'+
@@ -126,11 +129,11 @@
 		},
 
 		setAriaLabel: function(media) {
-			var label = mejs.i18n.t(this.options.sourcechooserText)
+			var label = this.options.sourcechooserText ? this.options.sourcechooserText : mejs.i18n.t('mejs.source-chooser');
 			var current = this.currentSource(media);
 
 			if (current) {
-				label += ': ' + mejs.i18n.t(current);
+				label += ': ' + current;
 			}
 
 			this.sourcechooserButton.find('button')

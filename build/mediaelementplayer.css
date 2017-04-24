@@ -910,6 +910,7 @@ div.mejs-speed-button {
 }
 
 .mejs-controls .mejs-speed-button .mejs-speed-selector {
+	display: none;
 	position: absolute;
 	top: -100px;
 	left: -10px;
@@ -926,6 +927,10 @@ div.mejs-speed-button {
 }
 
 
+.mejs-controls .mejs-speed-button:hover > .mejs-speed-selector {
+	display: block;
+}
+
 .mejs-controls .mejs-speed-button .mejs-speed-selector ul li label.mejs-speed-selected {
 	color: rgba(33, 248, 248, 1);
 }
@@ -940,6 +945,7 @@ div.mejs-speed-button {
 
 .mejs-controls .mejs-speed-button .mejs-speed-selector ul li {
 	margin: 0 0 6px 0;
+	padding: 0 10px;
 	list-style-type: none !important;
 	display: block;
 	color: #fff;
@@ -950,9 +956,11 @@ div.mejs-speed-button {
 	clear: both;
 	float: left;
 	margin: 3px 3px 0 5px;
+	display: none;
 }
 
 .mejs-controls .mejs-speed-button .mejs-speed-selector ul li label {
+	width: 60px;
 	float: left;
 	padding: 4px 0 0 0;
 	line-height: 15px;

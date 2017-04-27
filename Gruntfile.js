@@ -35,7 +35,8 @@ module.exports = function(grunt) {
                     'src/js/me-featuredetection.js',
                     'src/js/me-mediaelements.js',
                     'src/js/me-shim.js',
-                    'src/js/me-i18n.js'
+                    'src/js/me-i18n.js',
+                    'src/js/me-i18n-locale-en.js'
                 ],
                 dest: 'build/mediaelement.js'
             },
@@ -56,7 +57,8 @@ module.exports = function(grunt) {
                     'src/js/mep-feature-sourcechooser.js',
                     'src/js/mep-feature-contextmenu.js',
                     'src/js/mep-feature-skipback.js',
-                    'src/js/mep-feature-postroll.js'
+                    'src/js/mep-feature-postroll.js',
+                    'src/js/mep-feature-markers.js'
                     ]),
                 dest: 'build/mediaelementplayer.js'
             },
@@ -113,6 +115,14 @@ module.exports = function(grunt) {
                 cwd     : 'src/css/',
                 src     : ['*.png', '*.svg', '*.gif', '*.css'],
                 dest    : 'build/',
+                flatten : true,
+                filter  : 'isFile'
+            },
+            translation: {
+                expand  : true,
+                cwd     : 'src/js/',
+                src     : ['me-i18n-locale-*.js'],
+                dest    : 'build/lang',
                 flatten : true,
                 filter  : 'isFile'
             }

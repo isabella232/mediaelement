@@ -722,7 +722,7 @@
 	bottom: 35px;
 }
 
-.mejs-captions-text {
+.mejs-captions-text, .mejs__captions-text * {
 	padding: 0;
 	background: url("background.png");
 	background: rgba(20, 20, 20, 0.5);

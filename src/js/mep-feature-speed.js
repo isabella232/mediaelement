@@ -87,6 +87,7 @@
 											(isCurrent ? ' checked="checked"' : '') +
 											' aria-selected="' + isCurrent + '"' +
 											' aria-label="' + getSpeedNameFromValue(speeds[i].value) + '"' +
+											' tabindex="-1"' +
 											' />' +
 								'<label for="' + inputId + '" ' + 'aria-hidden="true"' +
 											(isCurrent ? ' class="mejs-speed-selected"' : '') +

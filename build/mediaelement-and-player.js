@@ -3661,7 +3661,7 @@ function constrainedSeekTo(player, media, targetTime) {
 				railWidth = 0,
 				rail = t.controls.find('.mejs-time-rail'),
 				total = t.controls.find('.mejs-time-total'),
-				others = rail.siblings(),
+				others = rail.siblings().filter(':visible'), // don't include `display: none` controls when sizing
 				lastControl = others.last(),
 				lastControlPosition = null,
 				avoidAutosizeProgress = t.options && !t.options.autosizeProgress;

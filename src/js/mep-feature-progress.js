@@ -86,32 +86,32 @@
 						}
 					}
 				},
-				// Accessibility for slider
 				updateSlider = function (e) {
-
-					var seconds = media.currentTime,
-						timeSliderText = mejs.i18n.t('mejs.time-slider'),
-						time = mejs.Utility.secondsToTimeCode(seconds, player.options),
-						duration = media.duration;
-
-					t.slider.attr({
-						'aria-label': timeSliderText,
-						'aria-valuemin': 0,
-						'aria-valuemax': duration,
-						'aria-valuenow': seconds,
-						'aria-valuetext': time,
-						'role': 'slider',
-						'tabindex': 0
-					});
-
+					t.slider.attr(sliderA11yAttrs(media.duration, media.currentTime));
 				},
 				restartPlayer = function () {
 					var now = new Date();
 					if (now - lastKeyPressTime >= 1000) {
 						media.play();
 					}
+				},
+				// Accessibility for slider
+				sliderA11yAttrs = function (duration, currentSeconds) {
+					var timeSliderText = mejs.i18n.t('mejs.time-slider'),
+						time = mejs.Utility.secondsToTimeCode(currentSeconds, player.options);
+
+					return {
+						'aria-label': timeSliderText,
+						'aria-valuemin': 0,
+						'aria-valuemax': duration,
+						'aria-valuenow': currentSeconds,
+						'aria-valuetext': time,
+						'role': 'slider',
+						'tabindex': 0
+					};
 				};
 
+			t.slider.attr(sliderA11yAttrs(0, 0)); // initial a11y setup
 			t.slider.bind('focus', function (e) {
 				player.options.autoRewind = false;
 			});

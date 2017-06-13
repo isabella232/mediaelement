@@ -1163,7 +1163,7 @@ function constrainedSeekTo(player, media, targetTime) {
 				// find the size of all the other controls besides the rail
 				others.each(function() {
 					var $this = $(this);
-					if ($this.css('position') != 'absolute' && $this.is(':visible')) {
+					if ($this.css('position') != 'absolute') {
 						usedWidth += $(this).outerWidth(true);
 					}
 				});

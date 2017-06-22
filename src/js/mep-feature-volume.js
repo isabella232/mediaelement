@@ -51,7 +51,7 @@
 						'" title="' + t.options.muteText +
 						'" aria-label="' + t.options.muteText +
 						'"></button>' +
-						'<a href="javascript:void(0);" class="mejs-volume-slider">' + // outer background
+						'<a href="javascript:void(0);" class="mejs-volume-slider mejs-offscreen">' + // outer background
 						'<span class="mejs-offscreen">' + t.options.allyVolumeControlText + '</span>' +
 						'<div class="mejs-volume-total"></div>' + // line background
 						'<div class="mejs-volume-current"></div>' + // current volume
@@ -70,6 +70,11 @@
 						volumeSlider.show();
 						positionVolumeHandle(volume, true);
 						volumeSlider.hide();
+						return;
+					} else if (volumeSlider.hasClass('mejs-offscreen') && typeof secondTry == 'undefined') {
+						volumeSlider.removeClass('mejs-offscreen');
+						positionVolumeHandle(volume, true);
+						volumeSlider.addClass('mejs-offscreen');
 						return;
 					}
 
@@ -168,13 +173,13 @@
 
 			mute
 			.hover(function () {
-				volumeSlider.show();
+				volumeSlider.removeClass('mejs-offscreen');
 				mouseIsOver = true;
 			}, function () {
 				mouseIsOver = false;
 
 				if (!mouseIsDown && mode == 'vertical') {
-					volumeSlider.hide();
+					volumeSlider.addClass('mejs-offscreen');
 				}
 			});
 
@@ -194,6 +199,20 @@
 
 			};
 
+			var closeOnFocusOut = mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
+				// Firefox does NOT support e.relatedTarget to see which element
+				// just lost focus, so wait to find the next focused element
+				setTimeout(function () {
+					var parent = $(document.activeElement).closest('.mejs-mute');
+					if (!parent.length) {
+						// focus is outside the control; close menu
+						if (!mouseIsOver && mode == 'vertical') {
+							volumeSlider.addClass('mejs-offscreen');
+						}
+					}
+				}, 0);
+			}, 100);
+
 			volumeSlider
 			.bind('mouseover', function () {
 				mouseIsOver = true;
@@ -208,7 +227,7 @@
 					t.globalUnbind('.vol');
 
 					if (!mouseIsOver && mode == 'vertical') {
-						volumeSlider.hide();
+						volumeSlider.addClass('mejs-offscreen');
 					}
 				});
 				mouseIsDown = true;
@@ -233,17 +252,28 @@
 				positionVolumeHandle(volume);
 				media.setVolume(volume);
 				return false;
-			});
+			})
+
+			// Keyboard input
+			.bind('focus', function () {
+				volumeSlider.removeClass('mejs-offscreen');
+			})
+
+			// close menu when tabbing away
+			.on('focusout', closeOnFocusOut);
 
 			// MUTE button
 			mute.find('button').click(function () {
 				media.setMuted(!media.muted);
-			});
+			})
 
-			//Keyboard input
-			mute.find('button').bind('focus', function () {
-				volumeSlider.show();
-			});
+			// Keyboard input
+			.bind('focus', function () {
+				volumeSlider.removeClass('mejs-offscreen');
+			})
+
+			// close menu when tabbing away
+			.on('focusout', closeOnFocusOut);
 
 			// listen for volume change events from other sources
 			media.addEventListener('volumechange', function (e) {
@@ -278,7 +308,7 @@
 					mute.removeClass('mejs-unmute').addClass('mejs-mute');
 				}
 			});
-		}
+    }
 	});
 
 })(mejs.$);

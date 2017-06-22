@@ -61,11 +61,11 @@
 			player.captionsButton =
 					$('<div class="mejs-button mejs-captions-button">'+
 						'<button type="button" aria-controls="' + t.id + '" title="' + tracksTitle + '" aria-label="' + tracksTitle + '"></button>'+
-						'<div class="mejs-captions-selector">'+
+						'<div class="mejs-captions-selector mejs-offscreen" role="menu" aria-expanded="false" aria-hidden="true">'+
 							'<ul>'+
 								'<li>'+
-									'<input type="radio" name="' + player.id + '_captions" id="' + player.id + '_captions_none" value="none" checked="checked" />' +
-									'<label for="' + player.id + '_captions_none">' + mejs.i18n.t('mejs.none') +'</label>'+
+									'<input type="radio" name="' + player.id + '_captions" id="' + player.id + '_captions_none" value="none" checked="checked" role="menuitemradio" aria-selected="true" aria-label="' + mejs.i18n.t('mejs.none') + '" tabindex="-1" />' +
+									'<label for="' + player.id + '_captions_none" aria-hidden="true">' + mejs.i18n.t('mejs.none') +'</label>'+
 								'</li>'	+
 							'</ul>'+
 						'</div>'+
@@ -93,19 +93,68 @@
 					player.setTrack(lang);
 				});
 			} else {
-				// hover or keyboard focus
-				player.captionsButton.on( 'mouseenter focusin', function() {
-					$(this).find('.mejs-captions-selector').removeClass('mejs-offscreen');
+				// hover
+				var hoverTimeout;
+				player.captionsButton.hover(function() {
+					clearTimeout(hoverTimeout);
+					player.showCaptionsSelector();
+				}, function() {
+					hoverTimeout = setTimeout(function() {
+						player.hideCaptionsSelector();
+					}, t.options.menuTimeoutMouseLeave);
 				})
 
 				// handle clicks to the language radio buttons
-				.on('click','input[type=radio]',function() {
+				.on('keydown', function(e) {
+					var keyCode = e.keyCode;
+					switch (keyCode) {
+						case 32: // space
+							if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
+								player.showCaptionsSelector();
+							}
+							$(this).find('.mejs-captions-selector')
+								.find('input[type=radio]:checked').first().focus()
+							break;
+						case 13: // enter
+							player.showCaptionsSelector();
+							$(this).find('.mejs-captions-selector')
+								.find('input[type=radio]:checked').first().focus()
+							break;
+						case 27: // esc
+							player.hideCaptionsSelector();
+							$(this).find('button').focus();
+							break;
+						default:
+							return true;
+					}
+				})
+
+				// close menu when tabbing away
+				.on('focusout', mejs.Utility.debounce(function (e) { // Safari triggers focusout multiple times
+					// Firefox does NOT support e.relatedTarget to see which element
+					// just lost focus, so wait to find the next focused element
+					setTimeout(function () {
+						var parent = $(document.activeElement).closest('.mejs-captions-selector');
+						if (!parent.length) {
+							// focus is outside the control; close menu
+							player.hideCaptionsSelector();
+						}
+					}, 0);
+				}, 100))
+
+				// handle clicks to the language radio buttons
+				.on('click', 'input[type=radio]', function() {
 					lang = this.value;
 					player.setTrack(lang);
-				});
+				})
 
-				player.captionsButton.on( 'mouseleave focusout', function() {
-					$(this).find(".mejs-captions-selector").addClass("mejs-offscreen");
+				.on('click', 'button', function() {
+					if ($(this).siblings('.mejs-captions-selector').hasClass('mejs-offscreen')) {
+						player.showCaptionsSelector();
+						$(this).siblings('.mejs-captions-selector').find('input[type=radio]:checked').first().focus();
+					} else {
+						player.hideCaptionsSelector();
+					}
 				});
 
 			}
@@ -187,11 +236,44 @@
 			}
 		},
 
+		hideCaptionsSelector: function () {
+			this.captionsButton.find('.mejs-captions-selector')
+				.addClass('mejs-offscreen')
+				.attr('aria-expanded', 'false')
+				.attr('aria-hidden', 'true')
+				.find('input[type=radio]') // make radios not focusable
+				.attr('tabindex', '-1');
+		},
+
+		showCaptionsSelector: function () {
+			this.captionsButton.find('.mejs-captions-selector')
+				.removeClass('mejs-offscreen')
+				.attr('aria-expanded', 'true')
+				.attr('aria-hidden', 'false')
+				.find('input[type=radio]')
+				.attr('tabindex', '0');
+		},
+
+		setAriaLabel: function() {
+			var label = this.options.tracksText
+			var current = this.selectedTrack
+
+			if (current) {
+				label += ': ' + current.label;
+			}
+
+			this.captionsButton.find('button')
+				.attr('aria-label', label)
+				.attr('title', label);
+		},
+
 		setTrack: function(lang){
 
 			var t = this,
 				i;
 
+			$(this).attr('aria-selected', true).attr('checked', 'checked');
+			$(this).closest('.mejs-captions-selector').find('input[type=radio]').not(this).attr('aria-selected', 'false').removeAttr('checked');
 			if (lang == 'none') {
 				t.selectedTrack = null;
 				t.captionsButton.removeClass('mejs-captions-enabled');
@@ -207,6 +289,8 @@
 					}
 				}
 			}
+
+			t.setAriaLabel();
 		},
 
 		loadNextTrack: function() {
@@ -283,7 +367,8 @@
 
 			t.captionsButton
 				.find('input[value=' + lang + ']')
-					.prop('disabled',false)
+					.prop('disabled', false)
+					.attr('aria-label', label)
 				.siblings('label')
 					.html( label );
 

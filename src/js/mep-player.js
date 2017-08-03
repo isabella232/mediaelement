@@ -52,6 +52,14 @@ function constrainedSeekTo(player, media, targetTime) {
 		defaultSeekForwardInterval: function(media) {
 			return (media.duration * 0.05);
 		},
+		// default amount to move back when Page Up key is pressed
+		defaultJumpBackwardInterval: function(media) {
+			return (media.duration * 0.05);
+		},
+		// default amount to move forward when Page Down key is pressed
+		defaultJumpForwardInterval: function(media) {
+			return (media.duration * 0.05);
+		},
 		// set dimensions via JS instead of CSS
 		setDimensions: true,
 		// width of audio player

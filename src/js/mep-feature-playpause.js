@@ -50,8 +50,10 @@
 			};
 			togglePlayPause('pse');
 
-
 			media.addEventListener('play',function() {
+                               if (t.options.playbackRate) {
+                                 media.playbackRate = t.options.playbackRate;
+                               }
 				togglePlayPause('play');
 			}, false);
 			media.addEventListener('playing',function() {
@@ -60,6 +62,9 @@
 
 
 			media.addEventListener('pause',function() {
+                               if (t.options.playbackRate) {
+                                 media.playbackRate = t.options.playbackRate;
+                               }
 				togglePlayPause('pse');
 			}, false);
 			media.addEventListener('paused',function() {

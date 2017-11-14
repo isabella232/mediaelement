@@ -115,8 +115,16 @@
 
 						var newSpeed = $(this).attr('value');
 						playbackSpeed = newSpeed;
-						media.playbackRate = parseFloat(newSpeed);
-						speedButton.find('button')
+                                               var newPlaybackRate = parseFloat(newSpeed);
+						media.playbackRate = newPlaybackRate;
+
+                                               // IE11 doesn't remember the user-selected playbackRate once
+                                               // clicking play/pause after setting the rate, so we save
+                                               // the value to `this` and reference it in the play/pause handler
+                                               // see: mep-feature-playpause.js
+                                               t.options.playbackRate = newPlaybackRate;
+
+                                               speedButton.find('button')
 							.html(getSpeedNameFromValue(newSpeed))
 							.attr('aria-label', speedLabel(newSpeed));
 						speedButton.find('.mejs-speed-selected').removeClass('mejs-speed-selected');

@@ -1736,8 +1736,10 @@ function constrainedSeekTo(player, media, targetTime) {
 			};
 			togglePlayPause('pse');
 
-
 			media.addEventListener('play',function() {
+                               if (t.options.playbackRate) {
+                                 media.playbackRate = t.options.playbackRate;
+                               }
 				togglePlayPause('play');
 			}, false);
 			media.addEventListener('playing',function() {
@@ -1746,6 +1748,9 @@ function constrainedSeekTo(player, media, targetTime) {
 
 
 			media.addEventListener('pause',function() {
+                               if (t.options.playbackRate) {
+                                 media.playbackRate = t.options.playbackRate;
+                               }
 				togglePlayPause('pse');
 			}, false);
 			media.addEventListener('paused',function() {
@@ -3083,8 +3088,16 @@ function constrainedSeekTo(player, media, targetTime) {
 
 						var newSpeed = $(this).attr('value');
 						playbackSpeed = newSpeed;
-						media.playbackRate = parseFloat(newSpeed);
-						speedButton.find('button')
+                                               var newPlaybackRate = parseFloat(newSpeed);
+						media.playbackRate = newPlaybackRate;
+
+                                               // IE11 doesn't remember the user-selected playbackRate once
+                                               // clicking play/pause after setting the rate, so we save
+                                               // the value to `this` and reference it in the play/pause handler
+                                               // see: mep-feature-playpause.js
+                                               t.options.playbackRate = newPlaybackRate;
+
+                                               speedButton.find('button')
 							.html(getSpeedNameFromValue(newSpeed))
 							.attr('aria-label', speedLabel(newSpeed));
 						speedButton.find('.mejs-speed-selected').removeClass('mejs-speed-selected');

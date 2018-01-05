@@ -3645,17 +3645,15 @@ function constrainedSeekTo(player, media, targetTime) {
 				track = t.selectedTrack,
 				i,
 				sanitize = function (html) {
-
-					var div = document.createElement('div');
-
-					div.innerHTML = html;
+					parser = new DOMParser();
+					doc = parser.parseFromString(html, "text/html");
 
 					// Remove all nodes except those that are whitelisted
 					var elementWhitelist = [
 						'i', 'b', 'u', 'v', 'c',
 						'ruby', 'rt', 'lang', 'link'
 					];
-					var elements = Array.from(div.children || []);
+					var elements = Array.from(doc.body.children || []);
 					while (elements.length) {
 						var node = elements.shift();
 						if (elementWhitelist.includes(node.tagName.toLowerCase())) {
@@ -3667,7 +3665,7 @@ function constrainedSeekTo(player, media, targetTime) {
 
 					// Loop the elements and remove anything that contains value="javascript:" or an `on*` attribute
 					// (`onerror`, `onclick`, etc.)
-					var allElements = div.getElementsByTagName('*');
+					var allElements = doc.body.getElementsByTagName('*');
 					for (var i = 0, n = allElements.length; i < n; i++) {
 						var
 							attributesObj = allElements[i].attributes,
@@ -3683,7 +3681,8 @@ function constrainedSeekTo(player, media, targetTime) {
 						}
 
 					}
-					return div.innerHTML;
+
+					return doc.body.innerHTML;
 				};
 
 			if (track !== null && track.isLoaded) {

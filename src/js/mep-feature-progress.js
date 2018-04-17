@@ -1,52 +1,51 @@
 (function($) {
+
 	$.extend(mejs.MepDefaults, {
 		// Enable tooltip that shows time in progress bar
 		enableProgressTooltip: true,
-		progressHelpText: ""
+		progressHelpText: ''
 	});
 
 	// progress/loaded bar
 	$.extend(MediaElementPlayer.prototype, {
 		buildprogress: function(player, controls, layers, media) {
-			var t = this,
+
+			var
+				t = this,
 				mouseIsDown = false,
 				mouseIsOver = false,
 				lastKeyPressTime = 0,
 				startedPaused = false,
 				autoRewindInitial = player.options.autoRewind,
-				progressTitle = t.options.progressHelpText
-					? t.options.progressHelpText
-					: mejs.i18n.t("mejs.time-help-text"),
-				tooltip = player.options.enableProgressTooltip
-					? '<span class="mejs-time-float">' +
-						'<span class="mejs-time-float-current">00:00</span>' +
-						'<span class="mejs-time-float-corner"></span>' +
-						"</span>"
-					: "";
+				progressTitle = t.options.progressHelpText ? t.options.progressHelpText : mejs.i18n.t('mejs.time-help-text'),
+				tooltip = player.options.enableProgressTooltip ? '<span class="mejs-time-float">' +
+					'<span class="mejs-time-float-current">00:00</span>' +
+					'<span class="mejs-time-float-corner"></span>' +
+				'</span>' : "";
 
-			$(
-				'<div class="mejs-time-rail">' +
-					'<span	class="mejs-time-total mejs-time-slider">' +
-					//'<span class="mejs-offscreen">' + progressTitle + '</span>' +
+			$('<div class="mejs-time-rail">' +
+				'<span  class="mejs-time-total mejs-time-slider">' +
+				//'<span class="mejs-offscreen">' + progressTitle + '</span>' +
 					'<span class="mejs-time-buffering"></span>' +
 					'<span class="mejs-time-loaded"></span>' +
 					'<span class="mejs-time-current"></span>' +
 					'<span class="mejs-time-handle"></span>' +
-					tooltip +
-					"</span>" +
-					"</div>"
-			).appendTo(controls);
-			controls.find(".mejs-time-buffering").hide();
+					 tooltip +
+				'</span>' +
+			'</div>')
+				.appendTo(controls);
+			controls.find('.mejs-time-buffering').hide();
 
-			t.total = controls.find(".mejs-time-total");
-			t.loaded = controls.find(".mejs-time-loaded");
-			t.current = controls.find(".mejs-time-current");
-			t.handle = controls.find(".mejs-time-handle");
-			t.timefloat = controls.find(".mejs-time-float");
-			t.timefloatcurrent = controls.find(".mejs-time-float-current");
-			t.slider = controls.find(".mejs-time-slider");
+			t.total = controls.find('.mejs-time-total');
+			t.loaded  = controls.find('.mejs-time-loaded');
+			t.current  = controls.find('.mejs-time-current');
+			t.handle  = controls.find('.mejs-time-handle');
+			t.timefloat  = controls.find('.mejs-time-float');
+			t.timefloatcurrent  = controls.find('.mejs-time-float-current');
+			t.slider = controls.find('.mejs-time-slider');
 
-			var handleMouseMove = function(e) {
+			var handleMouseMove = function (e) {
+
 					var offset = t.total.offset(),
 						width = t.total.width(),
 						percentage = 0,
@@ -57,8 +56,7 @@
 					// mouse or touch position relative to the object
 					if (e.originalEvent && e.originalEvent.changedTouches) {
 						x = e.originalEvent.changedTouches[0].pageX;
-					} else if (e.changedTouches) {
-						// for Zepto
+					} else if (e.changedTouches) { // for Zepto
 						x = e.changedTouches[0].pageX;
 					} else {
 						x = e.pageX;
@@ -72,7 +70,7 @@
 						}
 
 						pos = x - offset.left;
-						percentage = pos / width;
+						percentage = (pos / width);
 						newTime = percentage * media.duration;
 
 						// seek to where the mouse is
@@ -82,63 +80,59 @@
 
 						// position floating time box
 						if (!mejs.MediaFeatures.hasTouch) {
-							t.timefloat.css("left", pos);
-							t.timefloatcurrent.html(
-								mejs.Utility.secondsToTimeCode(newTime, player.options)
-							);
+							t.timefloat.css('left', pos);
+							t.timefloatcurrent.html( mejs.Utility.secondsToTimeCode(newTime, player.options) );
 							t.timefloat.show();
 						}
 					}
 				},
-				updateSlider = function(e) {
+				updateSlider = function (e) {
 					t.slider.attr(sliderA11yAttrs(media.duration, media.currentTime));
 				},
-				restartPlayer = function() {
+				restartPlayer = function () {
 					var now = new Date();
 					if (now - lastKeyPressTime >= 1000) {
 						media.play();
 					}
 				},
 				// Accessibility for slider
-				sliderA11yAttrs = function(duration, currentSeconds) {
-					var timeSliderText = mejs.i18n.t("mejs.time-slider"),
-						time = mejs.Utility.secondsToTimeCode(
-							currentSeconds,
-							player.options
-						);
+				sliderA11yAttrs = function (duration, currentSeconds) {
+					var timeSliderText = mejs.i18n.t('mejs.time-slider'),
+						time = mejs.Utility.secondsToTimeCode(currentSeconds, player.options);
 
 					return {
-						"aria-label": timeSliderText,
-						"aria-valuemin": 0,
-						"aria-valuemax": duration,
-						"aria-valuenow": currentSeconds,
-						"aria-valuetext": time,
-						role: "slider",
-						tabindex: 0
+						'aria-label': timeSliderText,
+						'aria-valuemin': 0,
+						'aria-valuemax': duration,
+						'aria-valuenow': currentSeconds,
+						'aria-valuetext': time,
+						'role': 'slider',
+						'tabindex': 0
 					};
 				};
 
 			t.slider.attr(sliderA11yAttrs(0, 0)); // initial a11y setup
-			t.slider.bind("focus", function(e) {
+			t.slider.bind('focus', function (e) {
 				player.options.autoRewind = false;
 			});
 
-			t.slider.bind("blur", function(e) {
+			t.slider.bind('blur', function (e) {
 				player.options.autoRewind = autoRewindInitial;
 			});
 
-			t.slider.bind("keydown", function(e) {
-				if (new Date() - lastKeyPressTime >= 1000) {
+			t.slider.bind('keydown', function (e) {
+
+				if ((new Date() - lastKeyPressTime) >= 1000) {
 					startedPaused = media.paused;
 				}
 
 				var keyCode = e.keyCode,
 					duration = media.duration,
 					seekTime = media.currentTime,
-					seekForward = player.options.defaultSeekForwardInterval(media),
+					seekForward  = player.options.defaultSeekForwardInterval(media),
 					seekBackward = player.options.defaultSeekBackwardInterval(media);
-				(jumpForward = player.options.defaultJumpForwardInterval(media)),
-					(jumpBackward = player.options.defaultJumpBackwardInterval(media));
+					jumpForward  = player.options.defaultJumpForwardInterval(media),
+					jumpBackward = player.options.defaultJumpBackwardInterval(media);
 
 				switch (keyCode) {
 					case 37: // left
@@ -169,10 +163,7 @@
 						return;
 				}
 
-				seekTime =
-					seekTime < 0
-						? 0
-						: seekTime >= duration ? duration : Math.floor(seekTime);
+				seekTime = seekTime < 0 ? 0 : (seekTime >= duration ? duration : Math.floor(seekTime));
 				lastKeyPressTime = new Date();
 				if (!startedPaused) {
 					media.pause();
@@ -189,105 +180,87 @@
 				return false;
 			});
 
+
 			// handle clicks
 			//controls.find('.mejs-time-rail').delegate('span', 'click', handleMouseMove);
 			t.total
-				.bind("mousedown touchstart", function(e) {
+				.bind('mousedown touchstart', function (e) {
 					// only handle left clicks or touch
 					if (e.which === 1 || e.which === 0) {
 						mouseIsDown = true;
 						handleMouseMove(e);
-						t.globalBind("mousemove.dur touchmove.dur", function(e) {
+						t.globalBind('mousemove.dur touchmove.dur', function(e) {
 							handleMouseMove(e);
 						});
-						t.globalBind("mouseup.dur touchend.dur", function(e) {
+						t.globalBind('mouseup.dur touchend.dur', function (e) {
 							mouseIsDown = false;
-							if (typeof t.timefloat !== "undefined") {
+							if (typeof t.timefloat !== 'undefined') {
 								t.timefloat.hide();
 							}
-							t.globalUnbind(".dur");
+							t.globalUnbind('.dur');
 						});
 					}
 				})
-				.bind("mouseenter", function(e) {
+				.bind('mouseenter', function(e) {
 					mouseIsOver = true;
-					t.globalBind("mousemove.dur", function(e) {
+					t.globalBind('mousemove.dur', function(e) {
 						handleMouseMove(e);
 					});
-					if (
-						typeof t.timefloat !== "undefined" &&
-						!mejs.MediaFeatures.hasTouch
-					) {
+					if (typeof t.timefloat !== 'undefined' && !mejs.MediaFeatures.hasTouch) {
 						t.timefloat.show();
 					}
 				})
-				.bind("mouseleave", function(e) {
+				.bind('mouseleave',function(e) {
 					mouseIsOver = false;
 					if (!mouseIsDown) {
-						t.globalUnbind(".dur");
-						if (typeof t.timefloat !== "undefined") {
+						t.globalUnbind('.dur');
+						if (typeof t.timefloat !== 'undefined') {
 							t.timefloat.hide();
 						}
 					}
 				});
 
 			// loading
-			media.addEventListener(
-				"progress",
-				function(e) {
-					player.setProgressRail(e);
-					player.setCurrentRail(e);
-				},
-				false
-			);
+			media.addEventListener('progress', function (e) {
+				player.setProgressRail(e);
+				player.setCurrentRail(e);
+			}, false);
 
 			// current time
-			media.addEventListener(
-				"timeupdate",
-				function(e) {
-					player.setProgressRail(e);
-					player.setCurrentRail(e);
-					updateSlider(e);
-				},
-				false
-			);
+			media.addEventListener('timeupdate', function(e) {
+				player.setProgressRail(e);
+				player.setCurrentRail(e);
+				updateSlider(e);
+			}, false);
 
-			t.container.on("controlsresize", function(e) {
+			t.container.on('controlsresize', function(e) {
 				player.setProgressRail(e);
 				player.setCurrentRail(e);
 			});
 		},
 		setProgressRail: function(e) {
-			var t = this,
-				target = e !== undefined ? e.target : t.media,
+
+			var
+				t = this,
+				target = (e !== undefined) ? e.target : t.media,
 				percent = null;
 
 			// newest HTML5 spec has buffered array (FF4, Webkit)
-			if (
-				target &&
-				target.buffered &&
-				target.buffered.length > 0 &&
-				target.buffered.end &&
-				target.duration
-			) {
-				//target.buffered can change length while were reading from it.
+			if (target && target.buffered && target.buffered.length > 0 && target.buffered.end && target.duration) {
+				//reading target.buffered can lead to race conditions
 				const buffer = target.buffered;
-				console.log(buffer);
 				// account for a real array with multiple values - always read the end of the last buffer
 				percent = buffer.end(buffer.length - 1) / target.duration;
-			} else if (
-				target &&
-				target.bytesTotal !== undefined &&
-				target.bytesTotal > 0 &&
-				target.bufferedBytes !== undefined
-			) {
-				// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
-				// to be anything other than 0. If the byte count is available we use this instead.
-				// Browsers that support the else if do not seem to have the bufferedBytes value and
-				// should skip to there. Tested in Safari 5, Webkit head, FF3.6, Chrome 6, IE 7/8.
+			}
+			// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
+			// to be anything other than 0. If the byte count is available we use this instead.
+			// Browsers that support the else if do not seem to have the bufferedBytes value and
+			// should skip to there. Tested in Safari 5, Webkit head, FF3.6, Chrome 6, IE 7/8.
+			else if (target && target.bytesTotal !== undefined && target.bytesTotal > 0 && target.bufferedBytes !== undefined) {
 				percent = target.bufferedBytes / target.bytesTotal;
-			} else if (e && e.lengthComputable && e.total !== 0) {
-				// Firefox 3 with an Ogg file seems to go this way
+			}
+			// Firefox 3 with an Ogg file seems to go this way
+			else if (e && e.lengthComputable && e.total !== 0) {
 				percent = e.loaded / e.total;
 			}
 
@@ -301,20 +274,22 @@
 			}
 		},
 		setCurrentRail: function() {
+
 			var t = this;
 
 			if (t.media.currentTime !== undefined && t.media.duration) {
+
 				// update bar and handle
 				if (t.total && t.handle) {
-					var newWidth = Math.round(
-							t.total.width() * t.media.currentTime / t.media.duration
-						),
+					var
+						newWidth = Math.round(t.total.width() * t.media.currentTime / t.media.duration),
 						handlePos = newWidth - Math.round(t.handle.outerWidth(true) / 2);
 
 					t.current.width(newWidth);
-					t.handle.css("left", handlePos);
+					t.handle.css('left', handlePos);
 				}
 			}
+
 		}
 	});
 })(mejs.$);

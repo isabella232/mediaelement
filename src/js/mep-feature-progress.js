@@ -247,7 +247,7 @@
 
 			// newest HTML5 spec has buffered array (FF4, Webkit)
 			const buffer = target && target.buffered; 
-			if (buffer && target.buffered.length > 0 && target.buffered.end && target.duration) {
+			if (buffer && buffer.length > 0 && buffer.end && target.duration) {
 			// account for a real array with multiple values - always read the end of the last buffer
 			percent = buffer.end(buffer.length - 1) / target.duration;
 			}

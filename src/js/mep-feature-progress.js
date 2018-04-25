@@ -246,12 +246,11 @@
 				percent = null;
 
 			// newest HTML5 spec has buffered array (FF4, Webkit)
-			if (target && target.buffered && target.buffered.length > 0 && target.buffered.end && target.duration) {
-				//reading target.buffered can lead to race conditions
-				const buffer = target.buffered;
-				// account for a real array with multiple values - always read the end of the last buffer
+            const buffer = target && target.buffered; 
+            if (buffer && target.buffered.length > 0 && target.buffered.end && target.duration) {
+              // account for a real array with multiple values - always read the end of the last buffer
 				percent = buffer.end(buffer.length - 1) / target.duration;
-			}
+            }
 			// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
 			// to be anything other than 0. If the byte count is available we use this instead.
 			// Browsers that support the else if do not seem to have the bufferedBytes value and

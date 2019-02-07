@@ -3531,11 +3531,7 @@ function constrainedSeekTo(player, media, targetTime) {
 					success: function(d) {
 
 						// parse the loaded file
-						if (typeof d == "string" && (/<tt\s+xml/ig).exec(d)) {
-							track.entries = mejs.TrackFormatParser.dfxp.parse(d);
-						} else {
-							track.entries = mejs.TrackFormatParser.webvtt.parse(d);
-						}
+						track.entries = mejs.TrackFormatParser.webvtt.parse(d);
 
 						after();
 

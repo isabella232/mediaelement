@@ -955,8 +955,9 @@ function constrainedSeekTo(player, media, targetTime) {
 				});
 
 				// This is a work-around for a bug in the YouTube iFrame player, which means
-				//	we can't use the play() API for the initial playback on iOS or Android;
-				//	user has to start playback directly by tapping on the iFrame.
+				// we can't use the play() API for the initial playback on iOS or Android;
+				// user has to start playback directly by tapping on the iFrame. Due to changes
+				// in the Chrome 72 autoplay policy, this mitigation was enabled for all browsers
 				if (t.media.pluginType == 'youtube') {
 					t.container.find('.mejs-overlay-play').hide();
 					t.container.find('.mejs-poster').hide();
@@ -3944,56 +3945,6 @@ function constrainedSeekTo(player, media, targetTime) {
 						});
 					}
 					identifier = '';
-				}
-				return entries;
-			}
-		},
-		// Thanks to Justin Capella: https://github.com/johndyer/mediaelement/pull/420
-		dfxp: {
-			parse: function(trackText) {
-				trackText = $(trackText).filter("tt");
-				var
-					i = 0,
-					container = trackText.children("div").eq(0),
-					lines = container.find("p"),
-					styleNode = trackText.find("#" + container.attr("style")),
-					styles,
-					text,
-					entries = {text:[], times:[]};
-
-
-				if (styleNode.length) {
-					var attributes = styleNode.removeAttr("id").get(0).attributes;
-					if (attributes.length) {
-						styles = {};
-						for (i = 0; i < attributes.length; i++) {
-							styles[attributes[i].name.split(":")[1]] = attributes[i].value;
-						}
-					}
-				}
-
-				for(i = 0; i<lines.length; i++) {
-					var style;
-					var _temp_times = {
-						start: null,
-						stop: null,
-						style: null
-					};
-					if (lines.eq(i).attr("begin")) _temp_times.start = mejs.Utility.convertSMPTEtoSeconds(lines.eq(i).attr("begin"));
-					if (!_temp_times.start && lines.eq(i-1).attr("end")) _temp_times.start = mejs.Utility.convertSMPTEtoSeconds(lines.eq(i-1).attr("end"));
-					if (lines.eq(i).attr("end")) _temp_times.stop = mejs.Utility.convertSMPTEtoSeconds(lines.eq(i).attr("end"));
-					if (!_temp_times.stop && lines.eq(i+1).attr("begin")) _temp_times.stop = mejs.Utility.convertSMPTEtoSeconds(lines.eq(i+1).attr("begin"));
-					if (styles) {
-						style = "";
-						for (var _style in styles) {
-							style += _style + ":" + styles[_style] + ";";
-						}
-					}
-					if (style) _temp_times.style = style;
-					if (_temp_times.start === 0) _temp_times.start = 0.200;
-					entries.times.push(_temp_times);
-					text = $.trim(lines.eq(i).html()).replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, "<a href='$1' target='_blank'>$1</a>");
-					entries.text.push(text);
 				}
 				return entries;
 			}

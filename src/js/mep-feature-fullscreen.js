@@ -42,7 +42,7 @@
 
 						// toggle fullscreen
 						var isFullScreen = (mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || player.isFullScreen;
-	
+
 						if (isFullScreen) {
 							player.exitFullScreen();
 						} else {
@@ -98,8 +98,8 @@
 				}
 			});
 
-			t.normalHeight = 0;
-			t.normalWidth = 0;
+			t.normalHeight = t.normalHeight || t.container.height();
+			t.normalWidth = t.normalWidth || t.container.width();
 
 			// setup native fullscreen event
 			if (mejs.MediaFeatures.hasTrueNativeFullScreen) {
